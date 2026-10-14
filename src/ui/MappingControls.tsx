@@ -6,7 +6,8 @@ import { useSourceCatalog } from "../sources/useSourceCatalog";
 
 const emptySelections: readonly SourceSelection[] = [];
 
-export function MappingControls({ context, selections, registry, mapping, fallbackLabel, onOpen, onClear }: {
+export function MappingControls({ context, selections, registry, mapping, fallbackLabel, onOpen, onClear, editingDisabled = false }: {
+  editingDisabled?: boolean;
   context: SourceContext; selections: readonly SourceSelection[] | undefined; registry: SourceRegistry;
   mapping: SourceReference | undefined; fallbackLabel: string | undefined; onOpen: () => void; onClear: () => void;
 }) {
@@ -24,15 +25,16 @@ export function MappingControls({ context, selections, registry, mapping, fallba
     : state.status === "success" && !option ? "Source unavailable: this field is no longer offered."
     : null);
   return <div className="mapping-controls">
-    <button type="button" disabled={selections === undefined}
+    <button type="button" disabled={editingDisabled || selections === undefined}
       aria-label={`${mapping ? "Replace" : "Set"} prefill for ${context.targetField.label}`} onClick={onOpen}>
       {mapping ? option?.label ?? fallbackLabel ?? `${mapping.resourceId} · ${mapping.fieldPath.join(" → ")}` : "Choose prefill source"}
     </button>
-    {mapping && <button type="button" className="secondary" aria-label={`Clear prefill for ${context.targetField.label}`}
+    {mapping && <button type="button" className="secondary" disabled={editingDisabled} aria-label={`Clear prefill for ${context.targetField.label}`}
       onClick={(event) => {
         const trigger = event.currentTarget.previousElementSibling;
         onClear();
         if (trigger instanceof HTMLButtonElement && !trigger.disabled) trigger.focus();
+        else event.currentTarget.closest<HTMLElement>(".form-detail")?.focus();
       }}>Clear</button>}
     {mapping && state.status === "loading" && <span role="status">Checking source availability…</span>}
     {unavailable && <span className="mapping-availability" role="status">{unavailable} The mapping is preserved.</span>}

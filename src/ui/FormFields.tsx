@@ -2,11 +2,11 @@ import type { ReactNode } from "react";
 import type { FormField, FormInstance } from "../blueprint/model";
 import { isPrefillField } from "../blueprint/fieldPolicy";
 
-export function FormFields({ form, renderControls }: { form: FormInstance; renderControls?: (field: FormField) => ReactNode }) {
+export function FormFields({ form, renderControls, header }: { form: FormInstance; header?: ReactNode; renderControls?: (field: FormField) => ReactNode }) {
   const fields = form.fields.filter(isPrefillField);
   return (
-    <section className="form-detail" aria-label={`${form.name} fields`}>
-      <h3>{form.name}</h3>
+    <section tabIndex={-1} className="form-detail" aria-label={`${form.name} fields`}>
+      <div className="form-detail-heading"><h3>{form.name}</h3>{header}</div>
       <p>{renderControls ? "Edits are kept in this session only. Reloading resets mappings." : "Fields available for prefill. Mapping controls will be added later."}</p>
       {fields.length === 0 ? <p role="status">This form has no prefillable fields.</p> : (
         <ul className="field-list" aria-label="Fields">

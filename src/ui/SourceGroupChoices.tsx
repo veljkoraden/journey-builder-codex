@@ -15,9 +15,10 @@ export function SourceGroupChoices({ group, query, draft, onChoose }: {
   const open = term.length > 0 || expanded;
   return <fieldset>
     <legend>{group.label}</legend>
+    {group.description && <p className="source-kind">{group.description}</p>}
     <button type="button" className="group-toggle" aria-expanded={open} aria-controls={contentId}
       disabled={term.length > 0} onClick={() => setExpanded((value) => !value)}>
-      {open ? "Collapse" : "Expand"} {group.label}
+      {term ? "Search matches" : `${open ? "Collapse" : "Expand"} ${group.label}`}
     </button>
     <div id={contentId} hidden={!open}>
       {options.map((option) => {

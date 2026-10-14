@@ -12,6 +12,7 @@ export interface SourceOption {
   readonly types: readonly string[];
 }
 export interface SourceGroup {
+  readonly description?: string;
   readonly id: string;
   readonly label: string;
   readonly options: readonly SourceOption[];
