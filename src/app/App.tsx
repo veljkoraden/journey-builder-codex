@@ -1,3 +1,5 @@
+import { BlueprintConnection } from "../blueprint/BlueprintConnection";
+
 export function App() {
   return (
     <>
@@ -13,8 +15,7 @@ export function App() {
         <section className="workspace" aria-labelledby="workspace-heading">
           <span className="workspace-icon" aria-hidden="true">↳</span>
           <h2 id="workspace-heading">Your form workspace</h2>
-          <p>Form data is not connected yet.</p>
-          <p>Once connected, your forms and their prefill settings will appear here.</p>
+          <BlueprintConnection />
         </section>
       </main>
     </>
