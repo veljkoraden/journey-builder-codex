@@ -3,6 +3,7 @@ import { rejectSettings } from "./settings";
 
 export const globalProperties: SourceProvider = {
   id: "global-properties",
+  validateSettings: rejectSettings,
   async getGroups(_context, settings, signal) {
     signal.throwIfAborted();
     rejectSettings(settings);

@@ -1,12 +1,12 @@
 # Journey Builder Codex — investigation and phased implementation plan
 
 Date: 2026-10-14
-Status: Phases 1–5 complete locally; Phases 6–12 remain planned. See [Phase 5 evidence](phase-05-sources.md).
+Status: Phases 1–6 complete locally; Phases 7–12 remain planned. See [Phase 6 evidence](phase-06-source-configuration.md).
 Intended file: `/home/veljkoradenkovic/Documents/JOBS/Avantos/journey-builder-codex/docs/implementation-plan.md`.
 
 ## 1. Scope and independence
 
-The original request established this plan; subsequent implementation requests authorize Phases 1–5. Build the future application independently from the challenge brief, screenshots, and official mock server. Do not copy, import, or modify the Claude application's source. A later user request authorized a read-only architectural comparison; implementation remains independent. Keep both versions separate. “Improved” means meeting the quality targets below; it is not a verified comparison against the other implementation.
+The original request established this plan; subsequent implementation requests authorize Phases 1–6. Build the future application independently from the challenge brief, screenshots, and official mock server. Do not copy, import, or modify the Claude application's source. A later user request authorized a read-only architectural comparison; implementation remains independent. Keep both versions separate. “Improved” means meeting the quality targets below; it is not a verified comparison against the other implementation.
 
 The embedded challenge describes the eventual submission requirements. It does not instruct this planning session to publish a repository, send a submission, or start a four-day clock. The actual receipt date is unknown. Phases 1–4 provide the application shell, API connection, form browser, and dependency queries. Publication status belongs in the implementation handoff.
 
@@ -132,7 +132,7 @@ Defer node dragging, form execution, authentication, database persistence, undo 
 
 Complete these phases in order. Each delivers one reviewable piece. Add tests alongside the behavior they verify. At the end of each phase, record files changed, validation results, remaining limitations, and the next phase. A phase is complete only when its stated checks pass; implementation and browser verification are separate evidence.
 
-Phases 1–5 are complete locally with evidence in their phase documents. Phases 6–12 remain planned. These smaller phases replace the earlier five-phase breakdown.
+Phases 1–6 are complete locally with evidence in their phase documents. Phases 7–12 remain planned. These smaller phases replace the earlier five-phase breakdown.
 
 ### Phase 1 — Create the independent project
 
@@ -195,6 +195,8 @@ Phases 1–5 are complete locally with evidence in their phase documents. Phases
 **Done when:** Provider tests return the correct groups and references. A root form can receive sample global data. A test-only fourth provider can participate through registration without changing the aggregation algorithm. UI extension proof follows in Phase 9.
 
 ### Phase 6 — Configure source combinations at runtime
+
+**Status:** Complete locally; see [validation and React walkthrough](phase-06-source-configuration.md).
 
 **Purpose:** Meet the requirement to change combinations of existing sources without changing application code.
 
@@ -283,11 +285,11 @@ If time is tight, reduce decoration and optional toggle polish before reducing i
 - [x] Mock revision pinned and API documentation revisited; the documentation URL remains inaccessible.
 - [x] Node identity remains separate from form-definition identity.
 - [x] Direct and indirect upstream form queries are correct and deduplicated; source-provider UI remains planned.
-- [ ] Provider combinations change through runtime configuration.
+- [x] Provider combinations change through runtime configuration; catalog combinations are tested and deployed JSON reload is browser-verified.
 - [ ] New providers require no modal changes.
 - [ ] Mapping set/replace/clear/cancel and form isolation are tested.
 - [ ] Loading, error, empty, unavailable, and keyboard flows are covered.
 - [ ] Local checks and actual browser evidence are reported separately.
 - [ ] README supports fresh setup and a live extension demonstration.
 
-Next implementation action: Phase 6 — configure source combinations at runtime. Phases 1–5 have separate validation records; later phases remain proposals and acceptance criteria.
+Next implementation action: Phase 7 — implement isolated mapping state. Phases 1–6 have separate validation records; later phases remain proposals and acceptance criteria.

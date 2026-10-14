@@ -1,3 +1,4 @@
+import { SourceConfigurationStatus } from "../sources/SourceConfigurationStatus";
 import { BlueprintConnection } from "../blueprint/BlueprintConnection";
 
 export function App() {
@@ -16,6 +17,7 @@ export function App() {
           <span className="workspace-icon" aria-hidden="true">↳</span>
           <h2 id="workspace-heading">Your form workspace</h2>
           <BlueprintConnection />
+          <SourceConfigurationStatus />
         </section>
       </main>
     </>
