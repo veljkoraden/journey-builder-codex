@@ -1,14 +1,14 @@
 # Journey Builder Codex — investigation and phased implementation plan
 
 Date: 2026-10-14
-Status: Phase 1 complete; Phases 2–12 remain planned. See [Phase 1 evidence](phase-01-foundation.md).
+Status: Phases 1–2 complete; Phases 3–12 remain planned. See [Phase 2 evidence](phase-02-api-connection.md).
 Intended file: `/home/veljkoradenkovic/Documents/JOBS/Avantos/journey-builder-codex/docs/implementation-plan.md`.
 
 ## 1. Scope and independence
 
-The original request established this plan; the subsequent implementation request authorizes Phase 1. Build the future application independently from the challenge brief, screenshots, and official mock server. Do not copy, import, inspect, or modify the Claude application's source. Keep both versions separate. “Improved” means meeting the quality targets below; it is not a verified comparison against the other implementation.
+The original request established this plan; subsequent implementation requests authorize Phases 1–2. Build the future application independently from the challenge brief, screenshots, and official mock server. Do not copy, import, inspect, or modify the Claude application's source. Keep both versions separate. “Improved” means meeting the quality targets below; it is not a verified comparison against the other implementation.
 
-The embedded challenge describes the eventual submission requirements. It does not instruct this planning session to publish a repository, send a submission, or start a four-day clock. The actual receipt date is unknown. Phase 1 now provides the local application shell; no GitHub repository has been published.
+The embedded challenge describes the eventual submission requirements. It does not instruct this planning session to publish a repository, send a submission, or start a four-day clock. The actual receipt date is unknown. Phases 1–2 provide the application shell and API connection. Publication status belongs in the implementation handoff.
 
 ## 2. Investigation findings
 
@@ -132,7 +132,7 @@ Defer node dragging, form execution, authentication, database persistence, undo 
 
 Complete these phases in order. Each delivers one reviewable piece. Add tests alongside the behavior they verify. At the end of each phase, record files changed, validation results, remaining limitations, and the next phase. A phase is complete only when its stated checks pass; implementation and browser verification are separate evidence.
 
-Phase 1 is complete with evidence in [its phase document](phase-01-foundation.md). Phases 2–12 remain planned. These smaller phases replace the earlier five-phase breakdown.
+Phases 1–2 are complete with evidence in their phase documents. Phases 3–12 remain planned. These smaller phases replace the earlier five-phase breakdown.
 
 ### Phase 1 — Create the independent project
 
@@ -147,6 +147,8 @@ Phase 1 is complete with evidence in [its phase document](phase-01-foundation.md
 **Done when:** The shell runs locally, a basic render test passes, and type checking and production build succeed. No Claude application files have been reused.
 
 ### Phase 2 — Connect to the mock API
+
+**Status:** Complete; see [validation evidence](phase-02-api-connection.md).
 
 **Purpose:** Establish the real data connection before designing around assumed responses.
 
@@ -272,7 +274,7 @@ If time is tight, reduce decoration and optional toggle polish before reducing i
 ## 6. Review checklist and next action
 
 - [x] Fresh codebase; no Claude source reused or modified.
-- [ ] Mock revision pinned and API documentation revisited if available.
+- [x] Mock revision pinned and API documentation revisited; the documentation URL remains inaccessible.
 - [ ] Node identity remains separate from form-definition identity.
 - [ ] Direct and indirect source groups are correct and deduplicated.
 - [ ] Provider combinations change through runtime configuration.
@@ -282,4 +284,4 @@ If time is tight, reduce decoration and optional toggle polish before reducing i
 - [ ] Local checks and actual browser evidence are reported separately.
 - [ ] README supports fresh setup and a live extension demonstration.
 
-Next implementation action: Phase 2 — connect to the mock API. Phase 1 validation is recorded separately; later phases remain proposals and acceptance criteria.
+Next implementation action: Phase 3 — normalize the data and display forms. Phases 1–2 have separate validation records; later phases remain proposals and acceptance criteria.

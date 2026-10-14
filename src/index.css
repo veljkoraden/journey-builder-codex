@@ -22,3 +22,6 @@ h2 { font-size: 1.25rem; margin: 16px 0 8px; }
 .skip-link { position: absolute; top: 8px; left: 16px; padding: 8px 16px; background: #fff; color: #302881; transform: translateY(-150%); z-index: 1; }
 .skip-link:focus { transform: translateY(0); }
 :focus-visible { outline: 3px solid #5148bd; outline-offset: 4px; }
+
+button { font: inherit; padding: 8px 16px; border: 1px solid #5148bd; border-radius: 8px; background: #5148bd; color: #fff; cursor: pointer; }
+button:hover { background: #3e369d; }
