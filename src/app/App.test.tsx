@@ -5,6 +5,9 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { App } from "./App";
 import { blueprintFixture } from "../test/blueprintFixture";
 
+// Blueprint-focused tests isolate the separately tested configuration boundary.
+vi.mock("../sources/SourceConfigurationStatus", () => ({ SourceConfigurationStatus: () => null }));
+
 beforeEach(() => {
   vi.stubEnv("VITE_API_BASE_URL", "http://localhost:3000");
   vi.stubEnv("VITE_TENANT_ID", "1");

@@ -1,0 +1,7 @@
+{
+  "providers": [
+    { "id": "direct-forms", "enabled": true },
+    { "id": "indirect-forms", "enabled": true },
+    { "id": "global-properties", "enabled": true }
+  ]
+}

@@ -5,6 +5,7 @@ import { rejectSettings } from "./settings";
 function formProvider(id: string, scope: "direct" | "indirect"): SourceProvider {
   return {
     id,
+    validateSettings: rejectSettings,
     async getGroups(context, settings, signal) {
       signal.throwIfAborted();
       rejectSettings(settings);

@@ -110,3 +110,17 @@ are documented for review and further development.
 Phase 5 adds the tested source-provider service layer (not yet connected to the UI).
 See [the phase walkthrough](docs/phase-05-sources.md) for its architecture,
 extension contract, cancellation semantics, and validation evidence.
+
+### Runtime source configuration
+
+Edit `public/source-config.json` during development. In a deployed build, edit the
+served `source-config.json` alongside `index.html`, then reload; no JavaScript
+rebuild is needed. The file's `providers` array contains `{ "id": "direct-forms",
+"enabled": true }` entries. Installed IDs are `direct-forms`, `indirect-forms`,
+and `global-properties`. Omitted or disabled providers are excluded; an empty
+array enables none. IDs must be unique and known, including disabled entries.
+Built-ins accept no settings. This is public configuration: never include secrets.
+
+The app displays configuration status and offers Retry on failure. Mapping UI
+remains planned. See [Phase 6](docs/phase-06-source-configuration.md) for the React
+walkthrough, custom settings validation, tests, screenshots, and evidence limits.
