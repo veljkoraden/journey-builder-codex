@@ -106,3 +106,7 @@ executable provider examples arrive in later phases. No Claude source was reused
 
 This increment was implemented with AI assistance; its behavior and limitations
 are documented for review and further development.
+
+Phase 5 adds the tested source-provider service layer (not yet connected to the UI).
+See [the phase walkthrough](docs/phase-05-sources.md) for its architecture,
+extension contract, cancellation semantics, and validation evidence.
