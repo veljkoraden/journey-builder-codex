@@ -74,6 +74,26 @@ describe("application connection view", () => {
     expect(screen.queryByRole("alert")).not.toBeInTheDocument();
   });
 
+  it.each(["cycle", "missing endpoint", "disagreement"])("blocks a %s and retries successfully", async (failure) => {
+    const fixture = blueprintFixture();
+    const broken = {
+      ...fixture,
+      nodes: fixture.nodes.map((node) => ({ ...node, data: { ...node.data, prerequisites: undefined } })),
+      edges: failure === "cycle" ? [...fixture.edges, { source: "node-b", target: "node-a" }]
+        : failure === "missing endpoint" ? [{ source: "missing", target: "node-a" }] : [],
+    };
+    const invalid = failure === "disagreement" ? { ...fixture, edges: [] } : broken;
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValueOnce(new Response(JSON.stringify(invalid)))
+      .mockResolvedValueOnce(new Response(JSON.stringify(fixture))));
+    const user = userEvent.setup();
+    render(<App />);
+    expect(await screen.findByRole("alert")).toHaveTextContent("Invalid blueprint dependencies");
+    expect(screen.queryByRole("navigation", { name: "Forms" })).not.toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: "Try again" }));
+    expect(await screen.findByRole("button", { name: "Form A" })).toBeVisible();
+    expect(screen.queryByRole("alert")).not.toBeInTheDocument();
+  });
+
   it("reports invalid configuration without sending a request", () => {
     vi.stubEnv("VITE_API_BASE_URL", "invalid");
     const request = vi.fn();

@@ -1,14 +1,14 @@
 # Journey Builder Codex — investigation and phased implementation plan
 
 Date: 2026-10-14
-Status: Phases 1–3 complete locally; Phases 4–12 remain planned. See [Phase 3 evidence](phase-03-form-browser.md).
+Status: Phases 1–4 complete locally; Phases 5–12 remain planned. See [Phase 4 evidence](phase-04-dependencies.md).
 Intended file: `/home/veljkoradenkovic/Documents/JOBS/Avantos/journey-builder-codex/docs/implementation-plan.md`.
 
 ## 1. Scope and independence
 
-The original request established this plan; subsequent implementation requests authorize Phases 1–3. Build the future application independently from the challenge brief, screenshots, and official mock server. Do not copy, import, inspect, or modify the Claude application's source. Keep both versions separate. “Improved” means meeting the quality targets below; it is not a verified comparison against the other implementation.
+The original request established this plan; subsequent implementation requests authorize Phases 1–4. Build the future application independently from the challenge brief, screenshots, and official mock server. Do not copy, import, inspect, or modify the Claude application's source. Keep both versions separate. “Improved” means meeting the quality targets below; it is not a verified comparison against the other implementation.
 
-The embedded challenge describes the eventual submission requirements. It does not instruct this planning session to publish a repository, send a submission, or start a four-day clock. The actual receipt date is unknown. Phases 1–3 provide the application shell, API connection, and form browser. Publication status belongs in the implementation handoff.
+The embedded challenge describes the eventual submission requirements. It does not instruct this planning session to publish a repository, send a submission, or start a four-day clock. The actual receipt date is unknown. Phases 1–4 provide the application shell, API connection, form browser, and dependency queries. Publication status belongs in the implementation handoff.
 
 ## 2. Investigation findings
 
@@ -132,7 +132,7 @@ Defer node dragging, form execution, authentication, database persistence, undo 
 
 Complete these phases in order. Each delivers one reviewable piece. Add tests alongside the behavior they verify. At the end of each phase, record files changed, validation results, remaining limitations, and the next phase. A phase is complete only when its stated checks pass; implementation and browser verification are separate evidence.
 
-Phases 1–3 are complete locally with evidence in their phase documents. Phases 4–12 remain planned. These smaller phases replace the earlier five-phase breakdown.
+Phases 1–4 are complete locally with evidence in their phase documents. Phases 5–12 remain planned. These smaller phases replace the earlier five-phase breakdown.
 
 ### Phase 1 — Create the independent project
 
@@ -171,6 +171,8 @@ Phases 1–3 are complete locally with evidence in their phase documents. Phases
 **Done when:** Tests prove shared definitions do not collapse distinct nodes, missing definitions produce an actionable error, and array/object fields remain available. Selecting one node shows that node's name and fields.
 
 ### Phase 4 — Calculate eligible upstream forms
+
+**Status:** Complete locally; see [validation and React walkthrough](phase-04-dependencies.md).
 
 **Purpose:** Prevent users from selecting unrelated or downstream form data.
 
@@ -278,7 +280,7 @@ If time is tight, reduce decoration and optional toggle polish before reducing i
 - [x] Fresh codebase; no Claude source reused or modified.
 - [x] Mock revision pinned and API documentation revisited; the documentation URL remains inaccessible.
 - [x] Node identity remains separate from form-definition identity.
-- [ ] Direct and indirect source groups are correct and deduplicated.
+- [x] Direct and indirect upstream form queries are correct and deduplicated; source-provider UI remains planned.
 - [ ] Provider combinations change through runtime configuration.
 - [ ] New providers require no modal changes.
 - [ ] Mapping set/replace/clear/cancel and form isolation are tested.
@@ -286,4 +288,4 @@ If time is tight, reduce decoration and optional toggle polish before reducing i
 - [ ] Local checks and actual browser evidence are reported separately.
 - [ ] README supports fresh setup and a live extension demonstration.
 
-Next implementation action: Phase 4 — calculate eligible upstream forms. Phases 1–3 have separate validation records; later phases remain proposals and acceptance criteria.
+Next implementation action: Phase 5 — add the three source providers. Phases 1–4 have separate validation records; later phases remain proposals and acceptance criteria.

@@ -2,6 +2,7 @@ import { StrictMode } from "react";
 import { act, renderHook, waitFor } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { useBlueprint } from "./useBlueprint";
+import { blueprintFixture } from "../test/blueprintFixture";
 
 function payload(id = "test") {
   return { id, name: id, nodes: [], edges: [], forms: [] };
@@ -34,7 +35,7 @@ describe("blueprint request lifecycle", () => {
     const { result } = renderHook(() => useBlueprint("/graph"));
     expect(result.current.state.status).toBe("loading");
     await act(async () => pending.resolve(response("one")));
-    expect(result.current.state).toEqual({ status: "success", data: payload("one") });
+    expect(result.current.state).toMatchObject({ status: "success", data: payload("one") });
   });
 
   it("recovers from an error through retry", async () => {
@@ -62,7 +63,7 @@ describe("blueprint request lifecycle", () => {
       if (outcome === "resolve") old.resolve(response("old"));
       else old.reject(new TypeError("late error"));
     });
-    expect(result.current.state).toEqual({ status: "success", data: payload("new") });
+    expect(result.current.state).toMatchObject({ status: "success", data: payload("new") });
   });
 
   it("clears a previous success immediately when configuration becomes unavailable", async () => {
@@ -85,6 +86,20 @@ describe("blueprint request lifecycle", () => {
     await waitFor(() => expect(result.current.state.status).toBe("success"));
   });
 
+  it("reuses the dependency index on rerender without fetching again", async () => {
+    const request = vi.fn().mockResolvedValue(new Response(JSON.stringify(blueprintFixture())));
+    vi.stubGlobal("fetch", request);
+    const { result, rerender } = renderHook(() => useBlueprint("/graph"));
+    await waitFor(() => expect(result.current.state.status).toBe("success"));
+    const state = result.current.state;
+    if (state.status !== "success") throw new Error("Expected success");
+    const index = state.dependencies;
+    rerender();
+    expect(result.current.state).toMatchObject({ dependencies: index });
+    expect(index.getAncestors("node-b").direct).toEqual(["node-a"]);
+    expect(request).toHaveBeenCalledTimes(1);
+  });
+
   it("aborts pending work on unmount and tolerates a late rejection", async () => {
     const pending = deferred<Response>();
     const request = vi.fn().mockReturnValue(pending.promise);
@@ -105,6 +120,6 @@ describe("blueprint request lifecycle", () => {
     await waitFor(() => expect(result.current.state.status).toBe("success"));
     expect((request.mock.calls[0]?.[1].signal as AbortSignal).aborted).toBe(true);
     await act(async () => pending.reject(new DOMException("Aborted", "AbortError")));
-    expect(result.current.state).toEqual({ status: "success", data: payload("current") });
+    expect(result.current.state).toMatchObject({ status: "success", data: payload("current") });
   });
 });

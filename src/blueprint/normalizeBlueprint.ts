@@ -62,7 +62,7 @@ function fields(value: unknown, path: string): FormField[] {
   });
 }
 
-// Validate only the contract consumed here; graph connectivity is checked in Phase 4.
+// Validate the response shape; loadBlueprint checks dependency semantics afterward.
 export function normalizeBlueprint(value: unknown): Blueprint {
   const root = record(value, "response");
   const id = text(root.id, "id");
