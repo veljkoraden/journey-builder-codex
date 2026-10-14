@@ -1,12 +1,11 @@
 import { useEffect, useState } from "react";
-import { fetchBlueprint } from "./client";
-import { normalizeBlueprint } from "./normalizeBlueprint";
-import type { Blueprint } from "./model";
+import { loadBlueprint } from "./loadBlueprint";
+import type { LoadedBlueprint } from "./loadBlueprint";
 
 export type BlueprintState =
   | { status: "idle" }
   | { status: "loading" }
-  | { status: "success"; data: Blueprint }
+  | ({ status: "success" } & LoadedBlueprint)
   | { status: "error"; message: string };
 
 export function useBlueprint(endpoint: string | null) {
@@ -21,10 +20,10 @@ export function useBlueprint(endpoint: string | null) {
     if (endpoint === null) return;
     const controller = new AbortController();
     setResult({ endpoint, attempt, state: { status: "loading" } });
-    void fetchBlueprint(endpoint, controller.signal).then(normalizeBlueprint).then(
-      (data) => {
+    void loadBlueprint(endpoint, controller.signal).then(
+      (loaded) => {
         if (!controller.signal.aborted) {
-          setResult({ endpoint, attempt, state: { status: "success", data } });
+          setResult({ endpoint, attempt, state: { status: "success", ...loaded } });
         }
       },
       (error: unknown) => {
