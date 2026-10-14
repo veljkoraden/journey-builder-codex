@@ -5,7 +5,7 @@ export class BlueprintRequestError extends Error {
   }
 }
 
-// Transport only: the response remains unknown until Phase 3 validates its schema.
+// Transport only: normalization validates this unknown response before it reaches the UI.
 export async function fetchBlueprint(endpoint: string, signal: AbortSignal): Promise<unknown> {
   signal.throwIfAborted();
   let response: Response;

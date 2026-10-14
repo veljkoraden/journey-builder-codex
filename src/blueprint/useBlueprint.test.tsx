@@ -3,6 +3,13 @@ import { act, renderHook, waitFor } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { useBlueprint } from "./useBlueprint";
 
+function payload(id = "test") {
+  return { id, name: id, nodes: [], edges: [], forms: [] };
+}
+function response(id = "test") {
+  return new Response(JSON.stringify(payload(id)));
+}
+
 function deferred<T>() {
   let resolve!: (value: T) => void;
   let reject!: (error: unknown) => void;
@@ -26,13 +33,13 @@ describe("blueprint request lifecycle", () => {
     vi.stubGlobal("fetch", vi.fn().mockReturnValue(pending.promise));
     const { result } = renderHook(() => useBlueprint("/graph"));
     expect(result.current.state.status).toBe("loading");
-    await act(async () => pending.resolve(new Response('{"id":"one"}')));
-    expect(result.current.state).toEqual({ status: "success", data: { id: "one" } });
+    await act(async () => pending.resolve(response("one")));
+    expect(result.current.state).toEqual({ status: "success", data: payload("one") });
   });
 
   it("recovers from an error through retry", async () => {
     const request = vi.fn().mockRejectedValueOnce(new TypeError("offline"))
-      .mockResolvedValueOnce(new Response("{}"));
+      .mockResolvedValueOnce(response());
     vi.stubGlobal("fetch", request);
     const { result } = renderHook(() => useBlueprint("/graph"));
     await waitFor(() => expect(result.current.state.status).toBe("error"));
@@ -50,22 +57,32 @@ describe("blueprint request lifecycle", () => {
     const oldSignal = request.mock.calls[0]?.[1].signal as AbortSignal;
     rerender({ url: "/new" });
     expect(oldSignal.aborted).toBe(true);
-    await act(async () => current.resolve(new Response('{"id":"new"}')));
+    await act(async () => current.resolve(response("new")));
     await act(async () => {
-      if (outcome === "resolve") old.resolve(new Response('{"id":"old"}'));
+      if (outcome === "resolve") old.resolve(response("old"));
       else old.reject(new TypeError("late error"));
     });
-    expect(result.current.state).toEqual({ status: "success", data: { id: "new" } });
+    expect(result.current.state).toEqual({ status: "success", data: payload("new") });
   });
 
   it("clears a previous success immediately when configuration becomes unavailable", async () => {
-    vi.stubGlobal("fetch", vi.fn().mockResolvedValue(new Response("{}")));
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValue(response()));
     const { result, rerender } = renderHook(({ url }: { url: string | null }) => useBlueprint(url), {
       initialProps: { url: "/graph" as string | null },
     });
     await waitFor(() => expect(result.current.state.status).toBe("success"));
     rerender({ url: null });
     expect(result.current.state.status).toBe("idle");
+  });
+
+  it("turns validation failure into a retryable error", async () => {
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValueOnce(new Response("{}"))
+      .mockResolvedValueOnce(response()));
+    const { result } = renderHook(() => useBlueprint("/graph"));
+    await waitFor(() => expect(result.current.state.status).toBe("error"));
+    expect(result.current.state).toMatchObject({ message: expect.stringContaining("Invalid blueprint") });
+    act(() => result.current.retry());
+    await waitFor(() => expect(result.current.state.status).toBe("success"));
   });
 
   it("aborts pending work on unmount and tolerates a late rejection", async () => {
@@ -82,12 +99,12 @@ describe("blueprint request lifecycle", () => {
   it("survives StrictMode cleanup without displaying the cancelled request as an error", async () => {
     const pending = deferred<Response>();
     const request = vi.fn().mockReturnValueOnce(pending.promise)
-      .mockResolvedValueOnce(new Response('{"id":"current"}'));
+      .mockResolvedValueOnce(response("current"));
     vi.stubGlobal("fetch", request);
     const { result } = renderHook(() => useBlueprint("/graph"), { wrapper: StrictMode });
     await waitFor(() => expect(result.current.state.status).toBe("success"));
     expect((request.mock.calls[0]?.[1].signal as AbortSignal).aborted).toBe(true);
     await act(async () => pending.reject(new DOMException("Aborted", "AbortError")));
-    expect(result.current.state).toEqual({ status: "success", data: { id: "current" } });
+    expect(result.current.state).toEqual({ status: "success", data: payload("current") });
   });
 });
