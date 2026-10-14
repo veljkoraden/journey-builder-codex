@@ -1,0 +1,9 @@
+{
+  "repository": "https://github.com/mosaic-avantos/frontendchallengeserver",
+  "revision": "fdfbb9c78eb8ac518f952be183a3718098005265",
+  "sha256": {
+    "index.cjs": "bfcb2e0f71cdc199ba6ce402977bb3101fc3105348a354431a72236d3b8c27dc",
+    "graph.json": "bef74daa5b072ccbbe408eb3b79f5377168c84c661d662a6f9812bb68dd1d19c",
+    "upstream-package.json": "6f19e427e5c6712005e87b10ecf54d91cb0fe7aeabe1620d830c86502554364a"
+  }
+}

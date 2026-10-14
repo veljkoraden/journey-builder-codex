@@ -1,12 +1,12 @@
 # Journey Builder Codex — investigation and phased implementation plan
 
 Date: 2026-10-14
-Status: Phases 1–10 complete locally; Phases 11–12 remain planned. See [Phase 10 evidence](phase-10-editor-polish.md).
+Status: Phases 1–12 implemented; see [Phase 12 handoff and validation](phase-12-handoff.md). Merge and submission remain separate.
 Intended file: `/home/veljkoradenkovic/Documents/JOBS/Avantos/journey-builder-codex/docs/implementation-plan.md`.
 
 ## 1. Scope and independence
 
-The original request established this plan; subsequent implementation requests authorize Phases 1–10. Build the future application independently from the challenge brief, screenshots, and official mock server. Do not copy, import, or modify the Claude application's source. A later user request authorized a read-only architectural comparison; implementation remains independent. Keep both versions separate. “Improved” means meeting the quality targets below; it is not a verified comparison against the other implementation.
+The original request established this plan; subsequent implementation requests authorize Phases 1–12. Build the future application independently from the challenge brief, screenshots, and official mock server. Do not copy, import, or modify the Claude application's source. A later user request authorized a read-only architectural comparison; implementation remains independent. Keep both versions separate. “Improved” means meeting the quality targets below; it is not a verified comparison against the other implementation.
 
 The embedded challenge describes the eventual submission requirements. It does not instruct this planning session to publish a repository, send a submission, or start a four-day clock. The actual receipt date is unknown. Phases 1–4 provide the application shell, API connection, form browser, and dependency queries. Publication status belongs in the implementation handoff.
 
@@ -132,7 +132,7 @@ Defer node dragging, form execution, authentication, database persistence, undo 
 
 Complete these phases in order. Each delivers one reviewable piece. Add tests alongside the behavior they verify. At the end of each phase, record files changed, validation results, remaining limitations, and the next phase. A phase is complete only when its stated checks pass; implementation and browser verification are separate evidence.
 
-Phases 1–10 are complete locally with evidence in their phase documents. Phases 11–12 remain planned. These smaller phases replace the earlier five-phase breakdown.
+Phases 1–12 have implementation and validation records in their phase documents. These smaller phases replace the earlier five-phase breakdown.
 
 ### Phase 1 — Create the independent project
 
@@ -256,6 +256,8 @@ Phases 1–10 are complete locally with evidence in their phase documents. Phase
 
 ### Phase 11 — Verify the complete app against the mock
 
+**Status:** Complete locally; see [validation and test architecture](phase-11-acceptance.md).
+
 **Purpose:** Prove that individually tested pieces work together with the actual server.
 
 **Work:** Run a small browser scenario against the mock: load forms, select D, map its email from A, switch away and back, replace, and clear. Check a configured source subset, server failure/retry, keyboard dialog operation, and a narrow viewport. Run type checking, the full test suite, and production build.
@@ -265,6 +267,8 @@ Phases 1–10 are complete locally with evidence in their phase documents. Phase
 **Done when:** The main browser flow and required local checks pass. Record commands, mock revision, results, and screenshots. Reload behavior is visibly consistent with session-only state; no server-save claim is made.
 
 ### Phase 12 — Finish documentation and prepare the handoff
+
+**Status:** Implemented; see [handoff and validation](phase-12-handoff.md).
 
 **Purpose:** Make the project easy for a reviewer to run, understand, and extend during the live session.
 
@@ -292,12 +296,12 @@ If time is tight, reduce decoration and optional toggle polish before reducing i
 - [x] Fresh codebase; no Claude source reused or modified.
 - [x] Mock revision pinned and API documentation revisited; the documentation URL remains inaccessible.
 - [x] Node identity remains separate from form-definition identity.
-- [x] Direct and indirect upstream form queries are correct and deduplicated; source-provider UI remains planned.
+- [x] Direct and indirect upstream form queries are correct and deduplicated; source-provider UI is implemented.
 - [x] Provider combinations change through runtime configuration; catalog combinations are tested and deployed JSON reload is browser-verified.
 - [x] A registered fourth provider renders and can be selected without modal changes.
 - [x] Mapping set/replace/clear/cancel and form isolation are tested.
-- [ ] Loading, error, empty, unavailable, and keyboard flows are covered.
-- [ ] Local checks and actual browser evidence are reported separately.
-- [ ] README supports fresh setup and a live extension demonstration.
+- [x] Loading, error, empty, unavailable, and keyboard flows are covered.
+- [x] Local checks and actual browser evidence are reported separately.
+- [x] README supports fresh setup and a live extension demonstration.
 
-Next implementation action: Phase 11 — verify the complete app against the mock. Phases 1–10 have separate validation records; later phases remain proposals and acceptance criteria.
+Next action: review the open stacked PRs in dependency order, merge after review, and submit the repository link. There is no planned Phase 13. See [handoff](handoff.md) for remaining limitations.
