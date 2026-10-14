@@ -72,6 +72,19 @@ Then append this entry to the `providers` array in `public/source-config.json`:
 }
 ```
 
+If you change the **shipped** JSON as above, also update the single shipped-default
+assertion in `src/sources/configuration.test.ts`:
+
+```ts
+expect(parseSourceConfiguration(shipped).map((p) => p.id))
+  .toEqual([...ids, "team-directory"]);
+```
+
+Keep the `ids` constant unchanged: the following eight-subset tests intentionally
+exercise the three built-in providers. This assertion records the checkout's
+defaults, not a runtime restriction. Changing only deployed JSON needs no test
+or application-code edit. Restore the assertion when restoring shipped defaults.
+
 Run `npm run test:run` and `npm run build`. Restart development or deploy the new
 build, refresh source settings, and open a field. Search for **Manager**, select
 **Manager email**, and confirm. The mapping uses:
