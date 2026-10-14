@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import type { Blueprint, FormField, FormInstance } from "../blueprint/model";
 import type { DependencyGraph } from "../dependencies/createDependencyGraph";
 import { sourceReferenceKey } from "../sources/model";
@@ -9,6 +9,7 @@ import { getMapping } from "../mappings/reducer";
 import { usePrefillMappings } from "../mappings/usePrefillMappings";
 import { FormBrowser } from "./FormBrowser";
 import { FormFields } from "./FormFields";
+import { MappingControls } from "./MappingControls";
 import { SourceDialog } from "./SourceDialog";
 
 type ActiveTarget = {
@@ -32,6 +33,8 @@ export function PrefillEditor({ blueprint, dependencies, selections, registry = 
   useEffect(() => {
     if (active && (active.blueprint !== blueprint || active.selections !== selections)) setActive(null);
   }, [active, blueprint, selections]);
+  const contexts = useMemo(() => new Map(blueprint.forms.map((form) => [form.nodeId, new Map(form.fields.map((field) => [field.key,
+    { blueprint, dependencies, targetForm: form, targetField: field }]))])), [blueprint, dependencies]);
   const current = active?.blueprint === blueprint && active.selections === selections ? active : null;
   return <>
     <FormBrowser blueprint={blueprint} onSelect={close} renderFields={(form) => (
@@ -39,22 +42,13 @@ export function PrefillEditor({ blueprint, dependencies, selections, registry = 
         const target = { blueprintId: blueprint.id, nodeId: form.nodeId, fieldKey: field.key };
         const mapping = getMapping(state, target);
         const label = mapping && (labels[sourceReferenceKey(mapping)] ?? `${mapping.resourceId} · ${mapping.fieldPath.join(" → ")}`);
-        return <div className="mapping-controls">
-          <button type="button" disabled={selections === undefined}
-            aria-label={`${mapping ? "Replace" : "Set"} prefill for ${field.label}`}
-            onClick={() => { if (selections) setActive({ blueprint, form, field, selections }); }}>
-            {mapping ? label : "Choose prefill source"}
-          </button>
-          {mapping && <button type="button" className="secondary" aria-label={`Clear prefill for ${field.label}`}
-            onClick={(event) => {
-              const trigger = event.currentTarget.previousElementSibling;
-              clearMapping(target);
-              if (trigger instanceof HTMLButtonElement && !trigger.disabled) trigger.focus();
-            }}>Clear</button>}
-        </div>;
+        return <MappingControls context={contexts.get(form.nodeId)!.get(field.key)!} selections={selections} registry={registry}
+          mapping={mapping} fallbackLabel={label || undefined}
+          onOpen={() => { if (selections) setActive({ blueprint, form, field, selections }); }}
+          onClear={() => clearMapping(target)} />;
       }} />
     )} />
-    {current && <SourceDialog context={{ blueprint, dependencies, targetForm: current.form, targetField: current.field }}
+    {current && <SourceDialog context={contexts.get(current.form.nodeId)!.get(current.field.key)!}
       selections={current.selections} registry={registry} onClose={close} onConfirm={(source, label) => {
         setLabels((previous) => ({ ...previous, [sourceReferenceKey(source)]: label }));
         // Dialog confirms only references still present in its current successful catalog.

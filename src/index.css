@@ -59,3 +59,7 @@ button:disabled { opacity: 0.55; cursor: not-allowed; }
 .source-groups button { background: #fff; color: #243047; margin: 4px; overflow-wrap: anywhere; }
 .source-groups button[aria-pressed="true"] { background: #efedff; border-width: 2px; }
 .dialog-actions { display: flex; justify-content: flex-end; gap: 12px; }
+.source-search { display: grid; gap: 6px; margin: 16px 0; }
+.source-search input { font: inherit; padding: 10px; border: 1px solid #9da7bc; border-radius: 8px; min-width: 0; }
+.source-groups .group-toggle { display: block; font-weight: 600; }
+.mapping-availability { width: 100%; color: #7a4111; }

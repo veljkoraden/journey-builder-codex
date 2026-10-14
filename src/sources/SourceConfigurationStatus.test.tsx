@@ -32,3 +32,14 @@ it("announces pending configuration independently of blueprint loading", async (
   await screen.findByRole("button", { name: "Form A" });
   expect(screen.getByRole("status")).toHaveTextContent("Loading source configuration");
 });
+it("refreshes successful settings without unmounting the form browser", async () => {
+  const config = vi.fn().mockResolvedValueOnce(new Response(JSON.stringify({ providers: [{ id: "global-properties", enabled: true }] })))
+    .mockResolvedValueOnce(new Response(JSON.stringify({ providers: [] })));
+  setup(config); render(<App />);
+  await screen.findByText("1 prefill source enabled.");
+  await userEvent.setup().click(screen.getByRole("button", { name: "Form B" }));
+  await userEvent.setup().click(screen.getByRole("button", { name: "Refresh source settings" }));
+  expect(await screen.findByText("No prefill sources enabled.")).toBeVisible();
+  expect(screen.getByRole("button", { name: "Form B" })).toHaveAttribute("aria-pressed", "true");
+  expect(config).toHaveBeenCalledTimes(2);
+});
