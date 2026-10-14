@@ -124,3 +124,12 @@ Built-ins accept no settings. This is public configuration: never include secret
 The app displays configuration status and offers Retry on failure. Mapping UI
 remains planned. See [Phase 6](docs/phase-06-source-configuration.md) for the React
 walkthrough, custom settings validation, tests, screenshots, and evidence limits.
+
+### Mapping state (Phase 7)
+
+The tested `src/mappings/` reducer and React hook assign, replace, and clear source
+references independently for each blueprint, form node, and field. State is in
+memory: it resets when the editor owner unmounts or the page reloads. Mapping
+controls are not connected to the UI yet; they arrive in Phase 8. See the
+[Phase 7 walkthrough](docs/phase-07-mapping-state.md) for architecture, examples,
+validation results, and integration responsibilities.
