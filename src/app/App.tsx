@@ -1,7 +1,9 @@
+import { useSourceConfiguration } from "../sources/useSourceConfiguration";
 import { SourceConfigurationStatus } from "../sources/SourceConfigurationStatus";
 import { BlueprintConnection } from "../blueprint/BlueprintConnection";
 
 export function App() {
+  const configuration = useSourceConfiguration();
   return (
     <>
       <a className="skip-link" href="#main-content">Skip to content</a>
@@ -16,8 +18,8 @@ export function App() {
         <section className="workspace" aria-labelledby="workspace-heading">
           <span className="workspace-icon" aria-hidden="true">↳</span>
           <h2 id="workspace-heading">Your form workspace</h2>
-          <BlueprintConnection />
-          <SourceConfigurationStatus />
+          <BlueprintConnection selections={configuration.state.status === "success" ? configuration.state.selections : undefined} />
+          <SourceConfigurationStatus configuration={configuration} />
         </section>
       </main>
     </>

@@ -1,8 +1,9 @@
-import { FormBrowser } from "../ui/FormBrowser";
+import { PrefillEditor } from "../ui/PrefillEditor";
+import type { SourceSelection } from "../sources/model";
 import { readEndpoint } from "./config";
 import { useBlueprint } from "./useBlueprint";
 
-export function BlueprintConnection() {
+export function BlueprintConnection({ selections }: { selections: readonly SourceSelection[] | undefined }) {
   const configuration = readEndpoint(import.meta.env);
   const { state, retry } = useBlueprint(configuration.ok ? configuration.endpoint : null);
 
@@ -18,7 +19,7 @@ export function BlueprintConnection() {
     );
   }
   if (state.status === "success") {
-    return <FormBrowser key={state.data.id} blueprint={state.data} />;
+    return <PrefillEditor key={state.data.id} blueprint={state.data} dependencies={state.dependencies} selections={selections} />;
   }
   return <p role="status">Loading blueprint…</p>;
 }
