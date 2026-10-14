@@ -24,6 +24,7 @@ export interface SourceContext {
 }
 export interface SourceProvider {
   readonly id: string;
+  validateSettings?(settings: unknown): void;
   getGroups(context: SourceContext, settings: unknown, signal: AbortSignal): Promise<readonly SourceGroup[]>;
 }
 export interface SourceSelection {
