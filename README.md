@@ -172,3 +172,27 @@ This is a session-only editor control, not a backend execution flag.
 Source groups identify direct dependencies, indirect dependencies, and global
 data. See [Phase 10](docs/phase-10-editor-polish.md) for architecture, count and
 toggle tests, keyboard/viewport evidence, and screenshots.
+
+
+### Reproducible browser acceptance (Phase 11)
+
+```sh
+npm ci
+npx playwright install chromium
+npm run test:e2e
+npm run test:e2e:report
+```
+
+`test:e2e` typechecks the application and test harness, builds the app, and runs
+16 browser scenarios with an isolated pinned official mock. No existing server,
+fixed port, local `.env`, or earlier temporary script is required. Test servers
+bind loopback on OS-assigned ports and are cleaned up afterward. The suite checks
+all eight source combinations, mapping operations, keyboard behavior, real
+server failure/retry, reload reset, and narrow viewports.
+
+On Linux, `npx playwright install --with-deps chromium` also installs system
+libraries when needed (may require administrator rights). Reports and artifacts
+are generated in ignored `playwright-report/` and `test-results/` directories.
+See [Phase 11](docs/phase-11-acceptance.md) for architecture, pinned provenance,
+coverage, CI configuration, and limitations. Existing `npm run test:run` remains
+the separate 297-test unit/component suite.
