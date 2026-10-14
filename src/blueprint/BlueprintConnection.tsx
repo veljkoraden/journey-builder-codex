@@ -1,3 +1,4 @@
+import { FormBrowser } from "../ui/FormBrowser";
 import { readEndpoint } from "./config";
 import { useBlueprint } from "./useBlueprint";
 
@@ -17,12 +18,7 @@ export function BlueprintConnection() {
     );
   }
   if (state.status === "success") {
-    return (
-      <div role="status">
-        <p>Blueprint response received.</p>
-        <p>Form browsing and prefill editing are not available yet.</p>
-      </div>
-    );
+    return <FormBrowser key={state.data.id} blueprint={state.data} />;
   }
   return <p role="status">Loading blueprint…</p>;
 }

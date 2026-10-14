@@ -1,8 +1,8 @@
 # Journey Builder Codex
 
 An independent React implementation of the Avantos Journey Builder challenge.
-Phases 1–2 provide the application shell and a configurable mock API connection.
-Form browsing, source providers, and prefill editing follow in later phases.
+Phases 1–3 provide the application shell, mock API connection, response validation,
+and a selectable form/field browser. Source providers and prefill editing follow later.
 
 ## Run locally
 
@@ -29,8 +29,9 @@ npm start
 This revision uses Node's built-in HTTP module and needs no dependency install.
 It listens on port 3000. If that port is occupied, stop your own conflicting
 service or change the mock's local listen port and set `VITE_API_BASE_URL` to match.
-Do not terminate an unrelated service. The app displays loading, response received,
-or a retryable error; receiving JSON does not yet validate its graph schema.
+Do not terminate an unrelated service. The app displays loading, a selectable form
+list, or a retryable error. It validates the data needed for browsing before rendering;
+dependency semantics and complete JSON Schema evaluation are not yet checked.
 
 ## Commands
 
@@ -45,19 +46,23 @@ or a retryable error; receiving JSON does not yet validate its graph schema.
 
 Tests use jsdom, React Testing Library, user-event, and jest-dom. They check
 configuration validation, HTTP and JSON failures, cancellation, stale responses,
-request lifecycle, semantic landmarks, keyboard retry, and StrictMode rendering. DOM tests do not prove browser layout or native
-fragment navigation. Add tests for each later phase alongside its implementation.
+request lifecycle, response normalization, shared definitions, malformed data,
+field policy, semantic landmarks, keyboard selection/retry, and StrictMode rendering.
+DOM tests do not prove browser layout or native fragment navigation. Add tests for each later phase alongside its implementation.
 
 ## Structure
 
 - `src/app/`: application composition and its tests.
-- `src/blueprint/`: endpoint configuration, HTTP client, request hook, and connection view.
+- `src/blueprint/`: endpoint/client, normalized model, validation, field policy, request hook, and connection view.
+- `src/ui/`: form browser, selection list, and field details.
+- `src/test/blueprintFixture.ts`: independently authored test data.
 - `src/main.tsx`: React entry point.
 - `src/index.css`: shared styling.
 - `src/test/setup.ts`: DOM matchers and per-test cleanup.
 - `docs/implementation-plan.md`: twelve-phase delivery plan.
 - `docs/phase-01-foundation.md`: foundation evidence.
 - `docs/phase-02-api-connection.md`: API scope, tests, mock revision, and browser evidence.
+- `docs/phase-03-form-browser.md`: validation/form browsing, test evidence, and beginner React walkthrough.
 
 ## Configuration and scope
 
@@ -80,8 +85,12 @@ cannot overwrite newer results. Network, HTTP, and unreadable JSON errors provid
 a retry action. Configuration errors require fixing the settings and restarting
 Vite. No automatic retry loop, timeout, persistence, or mapping writes are added.
 
-Graph validation, form normalization, traversal, mappings, and provider registration
-are not implemented yet. The planned provider contract is in the implementation
+The browser preserves node identity even when definitions are shared, shows field
+labels/keys/types/required markers, and excludes button controls from prefill targets.
+Arrays and objects remain visible. Forms and fields preserve API/schema order.
+
+Dependency validation, traversal, mappings, and provider registration are not
+implemented yet. See the Phase 3 document for the exact boundary-validation scope. The planned provider contract is in the implementation
 plan; executable extension examples will arrive with those phases. No Claude
 application source was reused.
 

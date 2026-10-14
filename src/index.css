@@ -25,3 +25,22 @@ h2 { font-size: 1.25rem; margin: 16px 0 8px; }
 
 button { font: inherit; padding: 8px 16px; border: 1px solid #5148bd; border-radius: 8px; background: #5148bd; color: #fff; cursor: pointer; }
 button:hover { background: #3e369d; }
+
+.form-browser { display: grid; grid-template-columns: minmax(140px, 1fr) minmax(0, 3fr); gap: 28px; margin-top: 24px; }
+.form-browser h3 { margin: 0 0 12px; font-size: 1.1rem; }
+.form-list, .field-list { list-style: none; padding: 0; margin: 0; }
+.form-list li + li { margin-top: 8px; }
+.form-list button { width: 100%; text-align: left; background: #fff; color: #243047; border-color: #dfe3eb; overflow-wrap: anywhere; }
+.form-list button:hover { background: #f6f7fb; }
+.form-list button[aria-pressed="true"] { background: #efedff; border-color: #5148bd; color: #302881; font-weight: 650; }
+.count { color: #536078; font-weight: 400; }
+.form-detail { min-width: 0; }
+.field-list { margin-top: 20px; }
+.field-list li { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 12px; padding: 16px 0; border-top: 1px solid #dfe3eb; }
+.field-name { min-width: 0; overflow-wrap: anywhere; }
+.field-name strong, .field-name code { display: block; }
+.field-name code { color: #536078; font-size: 0.85rem; }
+.field-metadata { display: flex; align-items: flex-start; flex-wrap: wrap; gap: 8px; color: #536078; font-size: 0.85rem; }
+.required { background: #efedff; color: #302881; border-radius: 4px; padding: 0 6px; }
+.blueprint-name { overflow-wrap: anywhere; }
+@media (max-width: 640px) { .form-browser { grid-template-columns: 1fr; } }
