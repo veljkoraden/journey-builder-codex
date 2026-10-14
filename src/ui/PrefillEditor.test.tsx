@@ -81,7 +81,7 @@ describe("prefill editor interactions", () => {
   it("keeps keyboard focus inside the dialog", async () => {
     const user = userEvent.setup(); render(<PrefillEditor {...setup()} />);
     await openD(user); await choose(user);
-    const first = within(screen.getByRole("dialog")).getAllByRole("button")[0]!;
+    const first = screen.getByRole("searchbox");
     const last = screen.getByRole("button", { name: "Select" });
     last.focus(); await user.tab(); expect(first).toHaveFocus();
     await user.tab({ shift: true }); expect(last).toHaveFocus();
@@ -221,6 +221,93 @@ describe("prefill editor interactions", () => {
     expect(screen.getByRole("button", { name: "Replace prefill for Email" })).toBeDisabled();
     await user.click(screen.getByRole("button", { name: "Clear prefill for Email" }));
     expect(screen.getByRole("button", { name: "Set prefill for Email" })).toBeDisabled();
+  });
+
+  it("searches field labels case-insensitively and distinguishes no matches from no sources", async () => {
+    const user = userEvent.setup(); render(<PrefillEditor {...setup()} />);
+    await openD(user); await screen.findByRole("group", { name: "Form A" });
+    await user.type(screen.getByRole("searchbox"), "  eMaIL  ");
+    expect(within(screen.getByRole("group", { name: "Form A" })).getByRole("button", { name: "Email" })).toBeVisible();
+    expect(within(screen.getByRole("group", { name: "Form A" })).queryByRole("button", { name: "Name" })).not.toBeInTheDocument();
+    await user.clear(screen.getByRole("searchbox")); await user.type(screen.getByRole("searchbox"), "zzzz");
+    expect(screen.getByText("No sources match your search.")).toBeVisible();
+    expect(screen.queryByText("No sources available for this field.")).not.toBeInTheDocument();
+  });
+  it("matches group labels and exposes matching options in collapsed groups", async () => {
+    const user = userEvent.setup(); render(<PrefillEditor {...setup()} />);
+    await openD(user);
+    await user.click(await screen.findByRole("button", { name: "Collapse Form A" }));
+    expect(within(screen.getByRole("group", { name: "Form A" })).queryByRole("button", { name: "Email" })).not.toBeInTheDocument();
+    await user.type(screen.getByRole("searchbox"), "form a");
+    expect(within(screen.getByRole("group", { name: "Form A" })).getByRole("button", { name: "Email" })).toBeVisible();
+    expect(within(screen.getByRole("group", { name: "Form A" })).getByRole("button", { name: "Name" })).toBeVisible();
+    expect(screen.queryByRole("group", { name: "Form B" })).not.toBeInTheDocument();
+    await user.clear(screen.getByRole("searchbox"));
+    expect(screen.getByRole("button", { name: "Expand Form A" })).toHaveAttribute("aria-expanded", "false");
+  });
+  it("keeps the confirmed draft explicit when filtering hides its option", async () => {
+    const user = userEvent.setup(); render(<PrefillEditor {...setup()} />);
+    await openD(user); await choose(user);
+    await user.type(screen.getByRole("searchbox"), "no-match");
+    expect(screen.getByText("Selected: Form A · Email")).toBeVisible();
+    expect(screen.getByRole("button", { name: "Select" })).toBeEnabled();
+    await user.click(screen.getByRole("button", { name: "Select" }));
+    expect(screen.getByRole("button", { name: "Replace prefill for Email" })).toHaveTextContent("Form A · Email");
+  });
+  it("shows provider-specific errors and resets drafts on retry", async () => {
+    let healthy = false;
+    const registry = createSourceRegistry([
+      { id: "extra", getGroups: async () => [customGroup] },
+      { id: "broken", getGroups: async () => { if (!healthy) throw new Error("Service offline"); return []; } },
+    ]);
+    const user = userEvent.setup(); render(<PrefillEditor {...setup()} registry={registry} selections={[{ id: "extra" }, { id: "broken" }]} />);
+    await openD(user); await choose(user, "Extra source", "Custom email");
+    expect(screen.getByRole("alert")).toHaveTextContent("broken: Service offline");
+    healthy = true; await user.click(screen.getByRole("button", { name: "Retry sources" }));
+    await waitFor(() => expect(screen.queryByRole("alert")).not.toBeInTheDocument());
+    expect(screen.getByRole("button", { name: "Select" })).toBeDisabled();
+    expect(screen.getByRole("group", { name: "Extra source" })).toBeVisible();
+  });
+  it("labels a disabled mapping without deleting it and restores availability on reenable", async () => {
+    const props = setup(); const user = userEvent.setup();
+    const { rerender } = render(<PrefillEditor {...props} />);
+    await openD(user); await choose(user); await user.click(screen.getByRole("button", { name: "Select" }));
+    rerender(<PrefillEditor {...props} selections={[]} />);
+    expect(screen.getByText(/Source unavailable: provider is disabled/)).toBeVisible();
+    expect(screen.getByRole("button", { name: "Replace prefill for Email" })).toHaveTextContent("Form A · Email");
+    rerender(<PrefillEditor {...props} />);
+    await waitFor(() => expect(screen.queryByText(/Source unavailable/)).not.toBeInTheDocument());
+    expect(screen.getByRole("button", { name: "Clear prefill for Email" })).toBeVisible();
+  });
+  it.each(["missing", "failed"])("preserves and clears a %s source mapping", async (mode) => {
+    const props = setup(); const selections = [{ id: "extra" }];
+    const healthy = createSourceRegistry([{ id: "extra", getGroups: async () => [customGroup] }]);
+    const user = userEvent.setup(); const { rerender } = render(<PrefillEditor {...props} registry={healthy} selections={selections} />);
+    await openD(user); await choose(user, "Extra source", "Custom email");
+    await user.click(screen.getByRole("button", { name: "Select" }));
+    const changed = createSourceRegistry([{ id: "extra", getGroups: async () => { if (mode === "failed") throw new Error("offline"); return []; } }]);
+    rerender(<PrefillEditor {...props} registry={changed} selections={selections} />);
+    expect(await screen.findByText(mode === "failed" ? /provider could not be loaded/ : /field is no longer offered/)).toBeVisible();
+    expect(screen.getByRole("button", { name: "Replace prefill for Email" })).toHaveTextContent("Extra source · Custom email");
+    await user.click(screen.getByRole("button", { name: "Clear prefill for Email" }));
+    expect(screen.queryByText(/Source unavailable/)).not.toBeInTheDocument();
+  });
+  it("retries availability and refreshes a changed label without changing reference identity", async () => {
+    let failed = false; let renamed = false;
+    const registry = createSourceRegistry([{ id: "extra", getGroups: async () => {
+      if (failed) throw new Error("offline");
+      return [{ ...customGroup, label: renamed ? "Renamed source" : customGroup.label }];
+    } }]);
+    const props = setup(); const selections = [{ id: "extra" }];
+    const user = userEvent.setup(); const { rerender } = render(<PrefillEditor {...props} registry={registry} selections={selections} />);
+    await openD(user); await choose(user, "Extra source", "Custom email");
+    failed = true; await user.click(screen.getByRole("button", { name: "Select" }));
+    expect(await screen.findByText(/provider could not be loaded/)).toBeVisible();
+    failed = false; renamed = true;
+    await user.click(screen.getByRole("button", { name: "Retry source for Email" }));
+    await waitFor(() => expect(screen.getByRole("button", { name: "Replace prefill for Email" })).toHaveTextContent("Renamed source · Custom email"));
+    rerender(<PrefillEditor {...props} registry={registry} selections={[]} />);
+    expect(screen.getByRole("button", { name: "Clear prefill for Email" })).toBeVisible();
   });
 
 });

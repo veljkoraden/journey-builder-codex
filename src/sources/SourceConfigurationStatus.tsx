@@ -10,9 +10,9 @@ export function SourceConfigurationStatus({ configuration }: { configuration: Re
         <p role="alert">{state.message}</p>
         <button type="button" onClick={retry}>Retry source configuration</button>
       </>}
-      {state.status === "success" && <p>{state.selections.length === 0
+      {state.status === "success" && <><p>{state.selections.length === 0
         ? "No prefill sources enabled."
-        : `${state.selections.length} prefill source${state.selections.length === 1 ? "" : "s"} enabled.`}</p>}
+        : `${state.selections.length} prefill source${state.selections.length === 1 ? "" : "s"} enabled.`}</p><button type="button" className="secondary" onClick={retry}>Refresh source settings</button></>}
     </section>
   );
 }

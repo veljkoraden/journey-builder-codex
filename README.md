@@ -144,4 +144,18 @@ reloading resets them. Source groups come from the configured providers.
 
 See [Phase 8](docs/phase-08-prefill-dialog.md) for the React walkthrough,
 interaction tests, real-HTTP browser evidence, screenshots, and limitations.
-Search and detailed unavailable-source feedback are the next phase.
+Search and unavailable-source feedback are implemented in Phase 9.
+
+
+### Search and source availability (Phase 9)
+
+Search group or field labels in the source dialog. Search opens matching groups;
+clearing it restores their expansion state. A selected draft remains visible in
+the preview even if filtering hides its option. Failed providers show details and
+a Retry action; healthy results remain usable.
+
+Use **Refresh source settings** to apply changed runtime JSON without losing
+session mappings. Disabled, missing, or failed sources are labeled unavailable;
+their mappings remain stored and can be cleared or replaced. See the
+[Phase 9 walkthrough](docs/phase-09-source-search.md) for architecture, tests,
+browser screenshots, and the current loading/performance limitations.
