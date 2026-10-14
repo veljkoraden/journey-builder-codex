@@ -310,4 +310,64 @@ describe("prefill editor interactions", () => {
     expect(screen.getByRole("button", { name: "Clear prefill for Email" })).toBeVisible();
   });
 
+  it("updates navigation and detail counts on assign, replace, and clear", async () => {
+    const user = userEvent.setup(); render(<PrefillEditor {...setup()} />);
+    await openD(user); await choose(user); await user.click(screen.getByRole("button", { name: "Select" }));
+    expect(screen.getByRole("button", { name: "Form D" })).toHaveAccessibleDescription("1 of 2 mapped");
+    expect(screen.getByRole("button", { name: "Form E" })).toHaveAccessibleDescription("0 of 2 mapped");
+    expect(screen.getByText("1 of 2 fields mapped")).toBeVisible();
+    await user.click(screen.getByRole("button", { name: "Replace prefill for Email" }));
+    await choose(user, "Form B"); await user.click(screen.getByRole("button", { name: "Select" }));
+    expect(screen.getByText("1 of 2 fields mapped")).toBeVisible();
+    await user.click(screen.getByRole("button", { name: "Clear prefill for Email" }));
+    expect(screen.getByText("0 of 2 fields mapped")).toBeVisible();
+    expect(screen.getByRole("button", { name: "Set prefill for Email" })).toHaveFocus();
+  });
+  it("turns editing off and on with the keyboard without losing mappings", async () => {
+    const user = userEvent.setup(); render(<PrefillEditor {...setup()} />);
+    await openD(user); await choose(user); await user.click(screen.getByRole("button", { name: "Select" }));
+    const toggle = screen.getByRole("switch", { name: "Enable prefill for Form D" });
+    toggle.focus(); await user.keyboard(" ");
+    expect(toggle).not.toBeChecked(); expect(toggle).toHaveFocus();
+    expect(screen.getByText("Editing is off. Existing mappings are preserved.")).toBeVisible();
+    expect(screen.getByRole("button", { name: "Replace prefill for Email" })).toBeDisabled();
+    expect(screen.getByRole("button", { name: "Clear prefill for Email" })).toBeDisabled();
+    expect(screen.getByText("1 of 2 fields mapped")).toBeVisible();
+    await user.keyboard(" ");
+    expect(screen.getByRole("button", { name: "Replace prefill for Email" })).toBeEnabled();
+    expect(screen.getByRole("button", { name: "Replace prefill for Email" })).toHaveTextContent("Form A · Email");
+  });
+  it("keeps the editing toggle independent between form instances", async () => {
+    const user = userEvent.setup(); render(<PrefillEditor {...setup()} />);
+    await user.click(screen.getByRole("switch", { name: "Enable prefill for Form A" }));
+    await user.click(screen.getByRole("button", { name: "Form B" }));
+    expect(screen.getByRole("switch", { name: "Enable prefill for Form B" })).toBeChecked();
+    expect(screen.getByRole("button", { name: "Set prefill for Email" })).toBeEnabled();
+    await user.click(screen.getByRole("button", { name: "Form A" }));
+    expect(screen.getByRole("switch", { name: "Enable prefill for Form A" })).not.toBeChecked();
+    expect(screen.getByRole("button", { name: "Set prefill for Email" })).toBeDisabled();
+  });
+  it("discards an open draft when editing is disabled externally", async () => {
+    const user = userEvent.setup(); render(<PrefillEditor {...setup()} />);
+    await openD(user); await choose(user);
+    // External state changes can occur while native modality blocks pointer input behind it.
+    fireEvent.click(screen.getByRole("switch", { name: "Enable prefill for Form D" }));
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+    await user.click(screen.getByRole("switch", { name: "Enable prefill for Form D" }));
+    expect(screen.getByRole("button", { name: "Set prefill for Email" })).toBeVisible();
+  });
+  it("keeps focus in the field region after clearing during configuration failure", async () => {
+    const props = setup(); const user = userEvent.setup(); const { rerender } = render(<PrefillEditor {...props} />);
+    await openD(user); await choose(user); await user.click(screen.getByRole("button", { name: "Select" }));
+    rerender(<PrefillEditor {...props} selections={undefined} />);
+    await user.click(screen.getByRole("button", { name: "Clear prefill for Email" }));
+    expect(screen.getByRole("region", { name: "Form D fields" })).toHaveFocus();
+  });
+  it("shows provider-supplied source descriptions without interpreting provider IDs", async () => {
+    const user = userEvent.setup(); render(<PrefillEditor {...setup()} />); await openD(user);
+    expect(await screen.findByText("Direct dependency")).toBeVisible();
+    expect(screen.getByText("Indirect dependency")).toBeVisible();
+    expect(screen.getByText("Global data")).toBeVisible();
+  });
+
 });

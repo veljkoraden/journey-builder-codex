@@ -14,6 +14,7 @@ function formProvider(id: string, scope: "direct" | "indirect"): SourceProvider 
         .map((form) => ({
           id: form.nodeId,
           label: form.name,
+          description: scope === "direct" ? "Direct dependency" : "Indirect dependency",
           // Source fields include button outputs; target eligibility is a separate policy.
           options: form.fields.map((field) => ({
             reference: { providerId: id, resourceId: form.nodeId, fieldPath: [field.key] },

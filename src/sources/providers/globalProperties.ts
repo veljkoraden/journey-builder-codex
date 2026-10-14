@@ -10,6 +10,7 @@ export const globalProperties: SourceProvider = {
     return [{
       id: "sample-organization",
       label: "Sample organization",
+      description: "Global data",
       options: [
         { key: "name", label: "Organization name" },
         { key: "support_email", label: "Support email" },

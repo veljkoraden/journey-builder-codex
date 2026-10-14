@@ -63,3 +63,33 @@ button:disabled { opacity: 0.55; cursor: not-allowed; }
 .source-search input { font: inherit; padding: 10px; border: 1px solid #9da7bc; border-radius: 8px; min-width: 0; }
 .source-groups .group-toggle { display: block; font-weight: 600; }
 .mapping-availability { width: 100%; color: #7a4111; }
+
+/* Editor polish: controls remain visible and labels wrap at narrow widths. */
+.form-list button { display: flex; flex-direction: column; gap: 4px; min-height: 48px; }
+.form-progress { font-size: 0.8rem; font-weight: 400; color: #536078; }
+.form-detail-heading { display: flex; flex-wrap: wrap; align-items: flex-start; justify-content: space-between; gap: 12px; }
+.prefill-settings { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; }
+.mapping-count { font-size: 0.85rem; padding: 4px 10px; border-radius: 20px; background: #efedff; color: #302881; }
+.prefill-toggle { display: inline-flex; align-items: center; gap: 8px; cursor: pointer; }
+.prefill-toggle input { width: 20px; height: 20px; accent-color: #5148bd; }
+.prefill-paused { width: 100%; font-size: 0.9rem; }
+.mapping-controls > button:first-child { flex: 1 1 220px; }
+.mapping-controls button, .dialog-actions button, .source-groups button { min-height: 44px; }
+.field-list li { padding: 20px 0; }
+.source-kind { margin: 4px 8px; color: #536078; font-size: 0.85rem; }
+.source-dialog h2, .source-dialog p, .source-dialog li { overflow-wrap: anywhere; }
+.source-groups .group-toggle:disabled { opacity: 1; color: #536078; border-color: #dfe3eb; }
+@media (max-width: 640px) {
+  main { padding: 28px 12px; }
+  .workspace { padding: 20px 16px; }
+  .form-list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+  .form-list li + li { margin-top: 0; }
+  .form-list button { height: 100%; }
+  .prefill-settings { width: 100%; justify-content: space-between; }
+  .source-dialog { padding: 16px; }
+}
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { scroll-behavior: auto !important; } }
+.source-dialog[open] { display: flex; flex-direction: column; overflow: auto; }
+.source-dialog > :not(.source-groups) { flex-shrink: 0; }
+.source-dialog .source-groups { min-height: 0; overflow-y: auto; flex: 1 1 auto; }
+.dialog-actions { padding-top: 8px; border-top: 1px solid #dfe3eb; }

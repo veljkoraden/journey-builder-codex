@@ -1,12 +1,12 @@
 # Journey Builder Codex — investigation and phased implementation plan
 
 Date: 2026-10-14
-Status: Phases 1–9 complete locally; Phases 10–12 remain planned. See [Phase 9 evidence](phase-09-source-search.md).
+Status: Phases 1–10 complete locally; Phases 11–12 remain planned. See [Phase 10 evidence](phase-10-editor-polish.md).
 Intended file: `/home/veljkoradenkovic/Documents/JOBS/Avantos/journey-builder-codex/docs/implementation-plan.md`.
 
 ## 1. Scope and independence
 
-The original request established this plan; subsequent implementation requests authorize Phases 1–9. Build the future application independently from the challenge brief, screenshots, and official mock server. Do not copy, import, or modify the Claude application's source. A later user request authorized a read-only architectural comparison; implementation remains independent. Keep both versions separate. “Improved” means meeting the quality targets below; it is not a verified comparison against the other implementation.
+The original request established this plan; subsequent implementation requests authorize Phases 1–10. Build the future application independently from the challenge brief, screenshots, and official mock server. Do not copy, import, or modify the Claude application's source. A later user request authorized a read-only architectural comparison; implementation remains independent. Keep both versions separate. “Improved” means meeting the quality targets below; it is not a verified comparison against the other implementation.
 
 The embedded challenge describes the eventual submission requirements. It does not instruct this planning session to publish a repository, send a submission, or start a four-day clock. The actual receipt date is unknown. Phases 1–4 provide the application shell, API connection, form browser, and dependency queries. Publication status belongs in the implementation handoff.
 
@@ -132,7 +132,7 @@ Defer node dragging, form execution, authentication, database persistence, undo 
 
 Complete these phases in order. Each delivers one reviewable piece. Add tests alongside the behavior they verify. At the end of each phase, record files changed, validation results, remaining limitations, and the next phase. A phase is complete only when its stated checks pass; implementation and browser verification are separate evidence.
 
-Phases 1–9 are complete locally with evidence in their phase documents. Phases 10–12 remain planned. These smaller phases replace the earlier five-phase breakdown.
+Phases 1–10 are complete locally with evidence in their phase documents. Phases 11–12 remain planned. These smaller phases replace the earlier five-phase breakdown.
 
 ### Phase 1 — Create the independent project
 
@@ -244,6 +244,8 @@ Phases 1–9 are complete locally with evidence in their phase documents. Phases
 
 ### Phase 10 — Polish the editor and keyboard flow
 
+**Status:** Complete locally; see [validation and React walkthrough](phase-10-editor-polish.md).
+
 **Purpose:** Make the completed behavior clear and comfortable on desktop, narrow screens, and keyboards.
 
 **Work:** Finish the responsive list/detail layout, mapped counts, readable field keys and labels, and accessible clear controls. Check focus behavior across replacement, clearing, and empty results. If keeping the screenshot's prefill toggle, make it disable editing while preserving mappings, with a clear disabled state.
@@ -298,4 +300,4 @@ If time is tight, reduce decoration and optional toggle polish before reducing i
 - [ ] Local checks and actual browser evidence are reported separately.
 - [ ] README supports fresh setup and a live extension demonstration.
 
-Next implementation action: Phase 10 — polish the editor and keyboard flow. Phases 1–9 have separate validation records; later phases remain proposals and acceptance criteria.
+Next implementation action: Phase 11 — verify the complete app against the mock. Phases 1–10 have separate validation records; later phases remain proposals and acceptance criteria.

@@ -1,10 +1,12 @@
+import type { MappingCount } from "../mappings/summarizeMappings";
 import { useState, type ReactNode } from "react";
 import type { Blueprint } from "../blueprint/model";
 import { FormList } from "./FormList";
 import { FormFields } from "./FormFields";
 
-export function FormBrowser({ blueprint, renderFields, onSelect }: {
+export function FormBrowser({ blueprint, renderFields, onSelect, counts }: {
   blueprint: Blueprint;
+  counts?: ReadonlyMap<string, MappingCount>;
   renderFields?: (form: Blueprint["forms"][number]) => ReactNode;
   onSelect?: () => void;
 }) {
@@ -18,7 +20,7 @@ export function FormBrowser({ blueprint, renderFields, onSelect }: {
     <>
       <p className="blueprint-name">{blueprint.name}</p>
       <div className="form-browser">
-        <FormList forms={blueprint.forms} selectedId={selected.nodeId} onSelect={(id) => { onSelect?.(); setSelectedId(id); }} />
+        <FormList counts={counts} forms={blueprint.forms} selectedId={selected.nodeId} onSelect={(id) => { onSelect?.(); setSelectedId(id); }} />
         {renderFields ? renderFields(selected) : <FormFields form={selected} />}
       </div>
     </>

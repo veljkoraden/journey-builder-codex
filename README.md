@@ -159,3 +159,16 @@ session mappings. Disabled, missing, or failed sources are labeled unavailable;
 their mappings remain stored and can be cleared or replaced. See the
 [Phase 9 walkthrough](docs/phase-09-source-search.md) for architecture, tests,
 browser screenshots, and the current loading/performance limitations.
+
+
+### Editing controls (Phase 10)
+
+Form navigation and the detail header show how many prefillable fields have saved
+mappings. Unavailable sources still count as saved mappings. Each form has a
+**Prefill on/off** switch: turning it off disables assignment, replacement, and
+clearing while retaining all mappings. Turning it back on restores editing.
+This is a session-only editor control, not a backend execution flag.
+
+Source groups identify direct dependencies, indirect dependencies, and global
+data. See [Phase 10](docs/phase-10-editor-polish.md) for architecture, count and
+toggle tests, keyboard/viewport evidence, and screenshots.
