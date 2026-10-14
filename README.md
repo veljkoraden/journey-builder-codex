@@ -1,198 +1,134 @@
 # Journey Builder Codex
 
-An independent React implementation of the Avantos Journey Builder challenge.
-Phases 1–4 provide the application shell, mock API connection, response and dependency
-validation, upstream queries, and a selectable form/field browser. Source providers and prefill editing follow later.
+An independent React + TypeScript implementation of the Avantos Journey Builder
+challenge. Browse forms, map a field from direct/indirect upstream forms or sample
+global properties, search sources, replace or clear mappings, and inspect source
+availability. Each form has a mapped-field count and a switch that pauses editing
+without deleting its mappings.
+
+**Edits are session-only.** Reloading resets mappings and editing switches. The
+mock has no save endpoint; this app configures references, not submitted values.
 
 ## Run locally
 
-Use Node.js 22.12 or newer within the Node 22 release line and npm 10.
-The development environment uses Node 22.22.2 (`nvm use` reads `.nvmrc`).
-
-```bash
-npm ci
-npm run dev
-```
-
-Open http://127.0.0.1:5173. The port is fixed: stop a conflicting process or
-explicitly supply another port with `npm run dev -- --port 5174`.
-Without an `.env` file, the app requests the documented local mock defaults.
-Start the mock in a separate terminal:
-
-```bash
-git clone https://github.com/mosaic-avantos/frontendchallengeserver.git
-cd frontendchallengeserver
-git checkout fdfbb9c78eb8ac518f952be183a3718098005265
-npm start
-```
-
-This revision uses Node's built-in HTTP module and needs no dependency install.
-It listens on port 3000. If that port is occupied, stop your own conflicting
-service or change the mock's local listen port and set `VITE_API_BASE_URL` to match.
-Do not terminate an unrelated service. The app displays loading, a selectable form
-list, or a retryable error. It validates the data needed for browsing before rendering;
-cycles, missing references, and prerequisite disagreement block browsing. Complete
-JSON Schema evaluation is not implemented.
-
-## Commands
-
-| Command | Purpose |
-| --- | --- |
-| `npm run dev` | Start the local development server |
-| `npm run typecheck` | Check source, tests, and Vite configuration without emitting files |
-| `npm test` | Run Vitest in watch mode |
-| `npm run test:run` | Run the full test suite once |
-| `npm run build` | Type-check and build into `dist/` |
-| `npm run preview` | Serve the build at http://127.0.0.1:4173 |
-
-Tests use jsdom, React Testing Library, user-event, and jest-dom. They check
-configuration validation, HTTP and JSON failures, cancellation, stale responses,
-request lifecycle, response normalization, shared definitions, malformed data,
-field policy, dependency integrity/traversal, semantic landmarks, keyboard
-selection/retry, and StrictMode rendering.
-DOM tests do not prove browser layout or native fragment navigation. Add tests for each later phase alongside its implementation.
-
-## Structure
-
-- `src/app/`: application composition and its tests.
-- `src/blueprint/`: endpoint/client, normalized model, validation, field policy, request hook, and connection view.
-- `src/dependencies/`: pure graph validation, predecessor indexing, and upstream queries.
-- `src/ui/`: form browser, selection list, and field details.
-- `src/test/blueprintFixture.ts`: independently authored test data.
-- `src/main.tsx`: React entry point.
-- `src/index.css`: shared styling.
-- `src/test/setup.ts`: DOM matchers and per-test cleanup.
-- `docs/implementation-plan.md`: twelve-phase delivery plan.
-- `docs/phase-01-foundation.md`: foundation evidence.
-- `docs/phase-02-api-connection.md`: API scope, tests, mock revision, and browser evidence.
-- `docs/phase-03-form-browser.md`: validation/form browsing, test evidence, and beginner React walkthrough.
-- `docs/phase-04-dependencies.md`: dependency policy, algorithm tests, and React integration walkthrough.
-
-## Configuration and scope
-
-Copy `.env.example` to `.env` to override the public API settings, then restart Vite:
-
-| Setting | Default |
-| --- | --- |
-| `VITE_API_BASE_URL` | `http://localhost:3000` |
-| `VITE_TENANT_ID` | `1` |
-| `VITE_BLUEPRINT_ID` | `bp_01jk766tckfwx84xjcxazggzyc` |
-
-The client appends `/api/v1/{tenant}/actions/blueprints/{blueprint}/graph` to the
-base URL. Base path prefixes are supported; query strings, fragments, credentials,
-non-HTTP URLs, and empty identifiers are rejected. Identifiers are URL-encoded.
-Vite settings are public build-time values, not the future runtime provider config.
-Never put secrets in `VITE_*` variables. Environment files and build output are ignored.
-
-Fetching is cancelled when the view unmounts or the endpoint changes. Old requests
-cannot overwrite newer results. Network, HTTP, and unreadable JSON errors provide
-a retry action. Configuration errors require fixing the settings and restarting
-Vite. No automatic retry loop, timeout, persistence, or mapping writes are added.
-
-The browser preserves node identity even when definitions are shared, shows field
-labels/keys/types/required markers, and excludes button controls from prefill targets.
-Arrays and objects remain visible. Forms and fields preserve API/schema order.
-
-`loadBlueprint` fetches, normalizes, and validates dependencies before the hook
-publishes success. Its `dependencies.getAncestors(nodeId)` and
-`dependencies.getUpstreamForms(nodeId)` methods return disjoint direct/indirect
-groups. Edges are authoritative; supplied prerequisites must agree. Duplicate
-relationships are deduplicated, while duplicate identities and cycles are rejected.
-Non-form intermediary nodes are traversed but not returned as form sources.
-
-Mappings and provider registration are not implemented yet. See the Phase 3 and
-Phase 4 documents for validation boundaries. The provider contract is planned;
-executable provider examples arrive in later phases. No Claude source was reused.
-
-This increment was implemented with AI assistance; its behavior and limitations
-are documented for review and further development.
-
-Phase 5 adds the tested source-provider service layer (not yet connected to the UI).
-See [the phase walkthrough](docs/phase-05-sources.md) for its architecture,
-extension contract, cancellation semantics, and validation evidence.
-
-### Runtime source configuration
-
-Edit `public/source-config.json` during development. In a deployed build, edit the
-served `source-config.json` alongside `index.html`, then reload; no JavaScript
-rebuild is needed. The file's `providers` array contains `{ "id": "direct-forms",
-"enabled": true }` entries. Installed IDs are `direct-forms`, `indirect-forms`,
-and `global-properties`. Omitted or disabled providers are excluded; an empty
-array enables none. IDs must be unique and known, including disabled entries.
-Built-ins accept no settings. This is public configuration: never include secrets.
-
-The app displays configuration status and offers Retry on failure. Valid selections
-control the source dialog; unavailable configuration disables assignment. See [Phase 6](docs/phase-06-source-configuration.md) for the React
-walkthrough, custom settings validation, tests, screenshots, and evidence limits.
-
-### Mapping state (Phase 7)
-
-The tested `src/mappings/` reducer and React hook assign, replace, and clear source
-references independently for each blueprint, form node, and field. State is in
-memory: it resets when the editor owner unmounts or the page reloads. Mapping
-controls are connected to the editor as of Phase 8. See the
-[Phase 7 walkthrough](docs/phase-07-mapping-state.md) for architecture, examples,
-validation results, and integration responsibilities.
-
-
-### Configure a field (Phase 8)
-
-Select a form, click **Choose prefill source**, choose an option, and press
-**Select** to confirm. Click the mapped source to replace it or **Clear** to
-remove it. Cancel/Escape discard drafts. Switching forms retains mappings;
-reloading resets them. Source groups come from the configured providers.
-
-See [Phase 8](docs/phase-08-prefill-dialog.md) for the React walkthrough,
-interaction tests, real-HTTP browser evidence, screenshots, and limitations.
-Search and unavailable-source feedback are implemented in Phase 9.
-
-
-### Search and source availability (Phase 9)
-
-Search group or field labels in the source dialog. Search opens matching groups;
-clearing it restores their expansion state. A selected draft remains visible in
-the preview even if filtering hides its option. Failed providers show details and
-a Retry action; healthy results remain usable.
-
-Use **Refresh source settings** to apply changed runtime JSON without losing
-session mappings. Disabled, missing, or failed sources are labeled unavailable;
-their mappings remain stored and can be cleared or replaced. See the
-[Phase 9 walkthrough](docs/phase-09-source-search.md) for architecture, tests,
-browser screenshots, and the current loading/performance limitations.
-
-
-### Editing controls (Phase 10)
-
-Form navigation and the detail header show how many prefillable fields have saved
-mappings. Unavailable sources still count as saved mappings. Each form has a
-**Prefill on/off** switch: turning it off disables assignment, replacement, and
-clearing while retaining all mappings. Turning it back on restores editing.
-This is a session-only editor control, not a backend execution flag.
-
-Source groups identify direct dependencies, indirect dependencies, and global
-data. See [Phase 10](docs/phase-10-editor-polish.md) for architecture, count and
-toggle tests, keyboard/viewport evidence, and screenshots.
-
-
-### Reproducible browser acceptance (Phase 11)
+Use Node **22.12+ within the Node 22 release line** and npm 10. `.nvmrc` pins the
+project's development version; use `nvm use` if you use nvm.
 
 ```sh
 npm ci
-npx playwright install chromium
-npm run test:e2e
-npm run test:e2e:report
 ```
 
-`test:e2e` typechecks the application and test harness, builds the app, and runs
-16 browser scenarios with an isolated pinned official mock. No existing server,
-fixed port, local `.env`, or earlier temporary script is required. Test servers
-bind loopback on OS-assigned ports and are cleaned up afterward. The suite checks
-all eight source combinations, mapping operations, keyboard behavior, real
-server failure/retry, reload reset, and narrow viewports.
+In one terminal, from this repository, start the bundled pinned official mock:
 
-On Linux, `npx playwright install --with-deps chromium` also installs system
-libraries when needed (may require administrator rights). Reports and artifacts
-are generated in ignored `playwright-report/` and `test-results/` directories.
-See [Phase 11](docs/phase-11-acceptance.md) for architecture, pinned provenance,
-coverage, CI configuration, and limitations. Existing `npm run test:run` remains
-the separate 297-test unit/component suite.
+```sh
+node e2e/mock/index.cjs
+```
+
+In a second terminal, from this repository:
+
+```sh
+npm run dev
+```
+
+Open **http://127.0.0.1:5173**. The mock uses port 3000. If a port is occupied,
+inspect the listener and use a different port for your own process; do not stop
+an unrelated service. The app port can be changed with
+`npm run dev -- --port 5174`. To change the mock port, use a separate local copy
+of its server/graph, adjust that copy's listen port, and set `VITE_API_BASE_URL`.
+Leave the checksummed acceptance fixture unchanged.
+
+The bundled files are attributed to the [official mock](e2e/mock/README.md), pinned
+at `fdfbb9c78eb8ac518f952be183a3718098005265`. They use Node built-ins; no separate
+mock package installation is needed.
+
+## Try the editor
+
+1. Select **Form D**, then **Choose prefill source** on Email.
+2. Select Email in **Form A**, inspect the preview, and press **Select**.
+3. Switch to another form and back; the mapping remains.
+4. Click the mapped source to replace it, or **Clear** to remove it.
+5. Cancel/Escape discard drafts. The prefill switch pauses editing for one form
+   while preserving mappings. Search matches group/field labels.
+
+See the [five-minute demonstration](docs/demo.md) for configuration changes,
+unavailable-source recovery, keyboard checks, and an extension demonstration.
+
+## Configuration
+
+| Configuration | Where | When applied |
+| --- | --- | --- |
+| API URL, tenant, blueprint | `.env` / `VITE_*` | Restart development server or rebuild |
+| Enabled source providers/settings | `public/source-config.json` | Refresh source settings or reload |
+| Deployed provider configuration | Served `source-config.json` beside `index.html` | Refresh source settings or reload, no JS rebuild |
+
+Copy `.env.example` to `.env` for API overrides. Defaults are
+`http://localhost:3000`, tenant `1`, and blueprint
+`bp_01jk766tckfwx84xjcxazggzyc`. The client uses the mock's route:
+`/api/v1/{tenant}/actions/blueprints/{blueprint}/graph`.
+The challenge's linked versioned route was not available in this mock.
+
+Example source configuration:
+
+```json
+{
+  "providers": [
+    { "id": "direct-forms", "enabled": true },
+    { "id": "indirect-forms", "enabled": false },
+    { "id": "global-properties", "enabled": true }
+  ]
+}
+```
+
+Omitted/disabled providers are excluded; an empty list enables none. IDs must be
+known and unique, including disabled entries. Built-ins accept no settings.
+Configuration errors are visible; the app never silently enables defaults.
+**Refresh source settings** preserves session edits, unlike page reload.
+All browser configuration is public: never put secrets in JSON or `VITE_*`.
+
+Adding a genuinely new provider requires code and a build. Choosing a combination
+of installed providers does not. Follow the [tested extension guide](docs/provider-extension.md).
+
+## Validate
+
+```sh
+npm run test:run
+npm run build
+npx playwright install chromium
+npm run test:e2e
+```
+
+The acceptance suite builds this checkout and starts its own isolated mock and
+app servers on available loopback ports. It needs no running dev server or `.env`.
+On Linux missing browser libraries, use
+`npx playwright install --with-deps chromium` (may need administrator rights).
+
+| Command | Purpose |
+| --- | --- |
+| `npm run dev` | Start Vite development server |
+| `npm run typecheck` | Check application and unit/component tests |
+| `npm test` / `npm run test:run` | Watch / run Vitest once |
+| `npm run build` / `npm run preview` | Build / serve `dist` |
+| `npm run typecheck:e2e` | Check browser harness TypeScript |
+| `npm run test:e2e` | Typecheck, build isolated app, run Chromium acceptance |
+| `npm run test:e2e:report` | Open browser HTML report |
+
+CI runs these checks and uploads browser artifacts. Local results, PR checks,
+merge, deployment, and submission are separate milestones. See the
+[handoff and evidence](docs/handoff.md) for current coverage and limitations.
+
+## Understand and extend the code
+
+- [Architecture and React walkthrough](docs/architecture.md): file tree, startup,
+  props, state, reducers, effects, graph/model boundaries.
+- [Provider extension](docs/provider-extension.md): runtime combinations and a
+  real, tested `team-directory` example, intentionally not enabled by default.
+- [Demonstration](docs/demo.md): normal flow, failure feedback, and live explanation.
+- [Handoff](docs/handoff.md): acceptance scope, limitations, review order, AI use.
+- [Phase 12](docs/phase-12-handoff.md): final-phase changes and validation.
+- [Implementation plan](docs/implementation-plan.md): all twelve phases and
+  historical evidence links.
+
+The implementation was developed with AI assistance from OpenAI Codex. It was
+built independently; no Claude application source was copied or imported. A
+later user-authorized read-only comparison informed architectural discussion.
+The submitter should review and understand the code before the live exercise.
