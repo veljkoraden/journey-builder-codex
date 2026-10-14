@@ -42,10 +42,32 @@ build time; runtime validation checks the public JSON settings.
 
 ## Validation evidence
 
-Fresh-checkout validation is recorded below after execution. The new example adds
-19 tests. Existing browser acceptance remains the full Phase 11 suite; no new
-browser claims or screenshots are needed for this documentation/opt-in example
-increment.
+Validated on 2026-10-15 (Europe/Belgrade), from a fresh local clone of commit
+`b2f9ca8`, with its own `node_modules` installed by `npm ci`:
+
+| Check | Result |
+| --- | --- |
+| `npm ci` | 110 packages installed; audit reported zero vulnerabilities |
+| `npm run test:run` | 316 tests passed across 19 files (19 new extension tests) |
+| `npm run build` | TypeScript and production Vite build passed |
+| `npm run test:e2e` | Application/harness typechecks and all 16 Chromium scenarios passed |
+| Local documentation links | 37 relative links checked across seven documents |
+| `git diff --check` | Passed |
+
+The browser suite used real HTTP with its owned pinned mock and production app,
+including all eight built-in source subsets, server/graph recovery, mapping flows,
+native dialog/keyboard behavior, and narrow viewports. Existing installed Chromium
+was reused; the clone did not reuse an application dependency installation.
+No new screenshots are required for this documentation/opt-in example increment.
+
+The extension instructions were also applied in the disposable clone. This
+revealed that changing shipped defaults requires updating the explicit default
+expectation; the guide now documents that step. That extended checkout then
+passed all 316 tests and the TypeScript/production build. These demonstration edits are not
+part of the delivered default app. Subsequent commit changes are documentation only.
+
+Phase 11 CI passed before this phase. Phase 12 CI must be read from its own PR;
+local results do not claim that CI, merge, deployment, or submission occurred.
 
 ## Remaining risks and next action
 
