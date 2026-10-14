@@ -1,12 +1,12 @@
 # Journey Builder Codex — investigation and phased implementation plan
 
 Date: 2026-10-14
-Status: Phases 1–7 complete locally; Phases 8–12 remain planned. See [Phase 7 evidence](phase-07-mapping-state.md).
+Status: Phases 1–8 complete locally; Phases 9–12 remain planned. See [Phase 8 evidence](phase-08-prefill-dialog.md).
 Intended file: `/home/veljkoradenkovic/Documents/JOBS/Avantos/journey-builder-codex/docs/implementation-plan.md`.
 
 ## 1. Scope and independence
 
-The original request established this plan; subsequent implementation requests authorize Phases 1–7. Build the future application independently from the challenge brief, screenshots, and official mock server. Do not copy, import, or modify the Claude application's source. A later user request authorized a read-only architectural comparison; implementation remains independent. Keep both versions separate. “Improved” means meeting the quality targets below; it is not a verified comparison against the other implementation.
+The original request established this plan; subsequent implementation requests authorize Phases 1–8. Build the future application independently from the challenge brief, screenshots, and official mock server. Do not copy, import, or modify the Claude application's source. A later user request authorized a read-only architectural comparison; implementation remains independent. Keep both versions separate. “Improved” means meeting the quality targets below; it is not a verified comparison against the other implementation.
 
 The embedded challenge describes the eventual submission requirements. It does not instruct this planning session to publish a repository, send a submission, or start a four-day clock. The actual receipt date is unknown. Phases 1–4 provide the application shell, API connection, form browser, and dependency queries. Publication status belongs in the implementation handoff.
 
@@ -132,7 +132,7 @@ Defer node dragging, form execution, authentication, database persistence, undo 
 
 Complete these phases in order. Each delivers one reviewable piece. Add tests alongside the behavior they verify. At the end of each phase, record files changed, validation results, remaining limitations, and the next phase. A phase is complete only when its stated checks pass; implementation and browser verification are separate evidence.
 
-Phases 1–7 are complete locally with evidence in their phase documents. Phases 8–12 remain planned. These smaller phases replace the earlier five-phase breakdown.
+Phases 1–8 are complete locally with evidence in their phase documents. Phases 9–12 remain planned. These smaller phases replace the earlier five-phase breakdown.
 
 ### Phase 1 — Create the independent project
 
@@ -220,6 +220,8 @@ Phases 1–7 are complete locally with evidence in their phase documents. Phases
 
 ### Phase 8 — Build the basic source-selection flow
 
+**Status:** Complete locally; see [validation and React walkthrough](phase-08-prefill-dialog.md).
+
 **Purpose:** Complete the central user task: choose a field and assign a source.
 
 **Work:** Render mapped and unmapped field rows. Open a dialog from a field, show source groups and options, preview the draft selection, and commit only through Select. Add replace and clear actions. Implement dialog naming, initial focus, focus containment, Escape, and focus return as part of the first dialog version.
@@ -288,10 +290,10 @@ If time is tight, reduce decoration and optional toggle polish before reducing i
 - [x] Node identity remains separate from form-definition identity.
 - [x] Direct and indirect upstream form queries are correct and deduplicated; source-provider UI remains planned.
 - [x] Provider combinations change through runtime configuration; catalog combinations are tested and deployed JSON reload is browser-verified.
-- [ ] New providers require no modal changes.
-- [ ] Mapping set/replace/clear/cancel and form isolation are tested.
+- [x] A registered fourth provider renders and can be selected without modal changes.
+- [x] Mapping set/replace/clear/cancel and form isolation are tested.
 - [ ] Loading, error, empty, unavailable, and keyboard flows are covered.
 - [ ] Local checks and actual browser evidence are reported separately.
 - [ ] README supports fresh setup and a live extension demonstration.
 
-Next implementation action: Phase 8 — build the basic source-selection flow. Phases 1–7 have separate validation records; later phases remain proposals and acceptance criteria.
+Next implementation action: Phase 9 — add search and source failure handling. Phases 1–8 have separate validation records; later phases remain proposals and acceptance criteria.

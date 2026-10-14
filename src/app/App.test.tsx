@@ -7,6 +7,9 @@ import { blueprintFixture } from "../test/blueprintFixture";
 
 // Blueprint-focused tests isolate the separately tested configuration boundary.
 vi.mock("../sources/SourceConfigurationStatus", () => ({ SourceConfigurationStatus: () => null }));
+vi.mock("../sources/useSourceConfiguration", () => ({
+  useSourceConfiguration: () => ({ state: { status: "success", selections: [] }, retry: () => {} }),
+}));
 
 beforeEach(() => {
   vi.stubEnv("VITE_API_BASE_URL", "http://localhost:3000");
@@ -35,10 +38,10 @@ describe("application connection view", () => {
     expect(screen.getByRole("status")).toHaveTextContent("Loading blueprint…");
   });
 
-  it("shows form fields without claiming that mapping is available", async () => {
+  it("shows session-only mapping controls", async () => {
     render(<App />);
     expect(await screen.findByRole("button", { name: "Form A" })).toBeVisible();
-    expect(screen.getByRole("region", { name: "Form A fields" })).toHaveTextContent("Mapping controls will be added later.");
+    expect(screen.getByRole("region", { name: "Form A fields" })).toHaveTextContent("Edits are kept in this session only.");
   });
 
   it("allows keyboard retry after a server error", async () => {

@@ -1,7 +1,7 @@
-import { useSourceConfiguration } from "./useSourceConfiguration";
+import type { useSourceConfiguration } from "./useSourceConfiguration";
 
-export function SourceConfigurationStatus() {
-  const { state, retry } = useSourceConfiguration();
+export function SourceConfigurationStatus({ configuration }: { configuration: ReturnType<typeof useSourceConfiguration> }) {
+  const { state, retry } = configuration;
   return (
     <section aria-labelledby="source-configuration-heading">
       <h2 id="source-configuration-heading">Prefill sources</h2>

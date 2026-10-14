@@ -121,8 +121,8 @@ and `global-properties`. Omitted or disabled providers are excluded; an empty
 array enables none. IDs must be unique and known, including disabled entries.
 Built-ins accept no settings. This is public configuration: never include secrets.
 
-The app displays configuration status and offers Retry on failure. Mapping UI
-remains planned. See [Phase 6](docs/phase-06-source-configuration.md) for the React
+The app displays configuration status and offers Retry on failure. Valid selections
+control the source dialog; unavailable configuration disables assignment. See [Phase 6](docs/phase-06-source-configuration.md) for the React
 walkthrough, custom settings validation, tests, screenshots, and evidence limits.
 
 ### Mapping state (Phase 7)
@@ -130,6 +130,18 @@ walkthrough, custom settings validation, tests, screenshots, and evidence limits
 The tested `src/mappings/` reducer and React hook assign, replace, and clear source
 references independently for each blueprint, form node, and field. State is in
 memory: it resets when the editor owner unmounts or the page reloads. Mapping
-controls are not connected to the UI yet; they arrive in Phase 8. See the
+controls are connected to the editor as of Phase 8. See the
 [Phase 7 walkthrough](docs/phase-07-mapping-state.md) for architecture, examples,
 validation results, and integration responsibilities.
+
+
+### Configure a field (Phase 8)
+
+Select a form, click **Choose prefill source**, choose an option, and press
+**Select** to confirm. Click the mapped source to replace it or **Clear** to
+remove it. Cancel/Escape discard drafts. Switching forms retains mappings;
+reloading resets them. Source groups come from the configured providers.
+
+See [Phase 8](docs/phase-08-prefill-dialog.md) for the React walkthrough,
+interaction tests, real-HTTP browser evidence, screenshots, and limitations.
+Search and detailed unavailable-source feedback are the next phase.
