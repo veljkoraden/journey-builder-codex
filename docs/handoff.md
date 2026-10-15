@@ -21,14 +21,13 @@ data, graph traversal, source failures, cancellation, and mapping isolation.
 Neither test layer proves a production deployment, real customer data, or backend
 persistence.
 
-The delivery correction is based directly on main commit `84a8707`, which includes
+The delivery correction was merged through PR #15 at `8ba5b7d`, preserving
 alphabetical forms and inline Direct/Transitive badges. Earlier Phase 11/12 PRs
 were merged into intermediate branches, so their tests and handoff files did not
-reach main. This branch restores them together; its PR targets main directly.
+reach main. PR #15 restored them together directly to main.
 See [delivery verification](delivery-verification.md) for current combined evidence.
 Historical phase documents retain their original validation results; they are not
-claims about the current merge or CI status. Review this corrective PR and its own
-CI before merging. No automatic merge, deployment, or submission is performed.
+claims about the current merge or CI status. Its PR CI passed; consult the repository for subsequent CI status. No automatic merge, deployment, or submission is performed.
 
 ## Known limitations
 
@@ -59,5 +58,8 @@ traversal, stable reference identity, effect cleanup, and draft versus committed
 React state. Practice these with the walkthrough and extension example before the
 live session.
 
-There is no remaining planned implementation phase. Review/merge the delivery correction,
-verify CI on the resulting branch, then submit the repository link yourself.
+The original delivery phases are complete. All five phases of the
+[optimization plan](optimization-plan.md) tracked in issue #16 are implemented on
+PR #18 and awaiting review and merge. Their phase records document validation
+and preserved source extensibility.
+Challenge submission remains a separate action by the submitter.

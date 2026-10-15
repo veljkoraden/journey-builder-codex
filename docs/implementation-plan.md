@@ -304,4 +304,8 @@ If time is tight, reduce decoration and optional toggle polish before reducing i
 - [x] Local checks and actual browser evidence are reported separately.
 - [x] README supports fresh setup and a live extension demonstration.
 
-Next action: review the delivery-correction PR targeting main directly, merge after its checks pass, and submit the repository link. There is no planned Phase 13. See [handoff](handoff.md) for remaining limitations.
+The original twelve phases and the handoff correction are delivered on main.
+Further work is tracked in [issue #16](https://github.com/veljkoraden/journey-builder-codex/issues/16)
+and the separately numbered [optimization plan](optimization-plan.md). All five
+optimization phases are implemented on PR #18 and awaiting review and merge.
+See [handoff](handoff.md) for current limitations.

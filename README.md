@@ -127,6 +127,9 @@ merge, deployment, and submission are separate milestones. See the
 
 ## Optimization progress
 
+The [optimization plan](docs/optimization-plan.md) links the completed O1–O5 work
+and its evidence. These changes are under review in PR #18, not yet merged.
+
 [Issue #16](https://github.com/veljkoraden/journey-builder-codex/issues/16) tracks
 readability and extensibility improvements. [O1: readability and tooling](docs/optimization-o1-readability.md)
 documents the first increment and its React walkthrough.

@@ -188,3 +188,6 @@ records six provider calls across two field assignments and a navigation round
 trip, with none from an unchanged parent render. Target-specific catalogs prevent
 safe sharing by form alone. Individual requests and explicit domain loading hooks
 remain; no cache or generic async hook is introduced.
+
+The [optimization plan](optimization-plan.md) links all five completed phases and
+their validation records. PR #18 remains open for review.

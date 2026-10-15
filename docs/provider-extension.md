@@ -175,3 +175,10 @@ Tests exercise the actual module, not a copied documentation snippet:
 
 The registration test verifies that configuration cannot enable unregistered code. Existing
 browser acceptance keeps proving the three built-in providers' eight combinations.
+
+## Optimization status
+
+The [optimization plan](optimization-plan.md) links completed readability and
+composition changes under review in PR #18. This guide describes the current implementation. Existing
+source combinations must remain configuration-only, and new providers must remain
+registerable without changes to the dialog, mapping reducer, or graph traversal.
