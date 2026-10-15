@@ -137,3 +137,14 @@ formatting, and search. `src/mappings/availability.ts` turns catalog state into 
 explicit unmapped/checking/available/unavailable result. The dialog and mapping
 controls consume these helpers; group components render filtered options while
 retaining expansion state. See the [O2 walkthrough](optimization-o2-catalog-decisions.md).
+
+## Selected-form composition (O3)
+
+`PrefillEditor` keeps mappings and editing settings above form navigation, and owns
+the active dialog target. `FormBrowser` supplies the selected form to `PrefillForm`,
+which composes `FormFields`, `PrefillSettings`, and private field controls. Each
+mounted field owns a stable source context using canonical graph objects; the
+open dialog has its own memoized context. No all-form context map is allocated.
+Explicit button and form-region refs restore focus after clearing a mapping.
+See [O3's React walkthrough](optimization-o3-editor-composition.md) for render flow
+and the distinction between durable state, props, memoized inputs, and refs.

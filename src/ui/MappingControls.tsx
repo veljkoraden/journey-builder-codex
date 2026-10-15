@@ -1,4 +1,4 @@
-import { useMemo, type MouseEvent } from "react";
+import { useMemo, useRef, type RefObject } from "react";
 import type { SourceContext, SourceReference, SourceSelection } from "../sources/model";
 import { getMappingAvailability } from "../mappings/availability";
 import type { SourceRegistry } from "../sources/registry";
@@ -8,6 +8,7 @@ const emptySelections: readonly SourceSelection[] = [];
 
 interface MappingControlsProps {
   editingDisabled?: boolean;
+  fallbackFocusRef?: RefObject<HTMLElement | null>;
   context: SourceContext;
   selections: readonly SourceSelection[] | undefined;
   registry: SourceRegistry;
@@ -26,7 +27,9 @@ export function MappingControls({
   onOpen,
   onClear,
   editingDisabled = false,
+  fallbackFocusRef,
 }: MappingControlsProps) {
+  const triggerRef = useRef<HTMLButtonElement>(null);
   const selectedProviders = useMemo(
     () =>
       mapping && selections
@@ -43,13 +46,13 @@ export function MappingControls({
   const availability = getMappingAvailability(mapping, selections, state);
   const canRetry = availability.status === "unavailable" && availability.reason === "failed";
 
-  function clearAndRestoreFocus(event: MouseEvent<HTMLButtonElement>) {
-    const trigger = event.currentTarget.previousElementSibling;
+  function clearAndRestoreFocus() {
+    const trigger = triggerRef.current;
     onClear();
-    if (trigger instanceof HTMLButtonElement && !trigger.disabled) {
+    if (trigger && !trigger.disabled) {
       trigger.focus();
     } else {
-      event.currentTarget.closest<HTMLElement>(".form-detail")?.focus();
+      fallbackFocusRef?.current?.focus();
     }
   }
 
@@ -61,6 +64,7 @@ export function MappingControls({
   return (
     <div className="mapping-controls">
       <button
+        ref={triggerRef}
         type="button"
         disabled={editingDisabled || selections === undefined}
         aria-label={`${mapping ? "Replace" : "Set"} prefill for ${context.targetField.label}`}

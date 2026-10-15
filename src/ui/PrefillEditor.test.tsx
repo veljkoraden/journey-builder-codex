@@ -1,7 +1,7 @@
 import { StrictMode } from "react";
 import { act, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { beforeEach, describe, expect, it } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { dependencyFixture } from "../test/dependencyFixture";
 import { createDependencyGraph } from "../dependencies/createDependencyGraph";
 import { createSourceRegistry } from "../sources/registry";
@@ -625,5 +625,67 @@ describe("prefill editor interactions", () => {
     const restored = screen.getByRole("group", { name: "Form A" });
     expect(within(restored).getByRole("button", { name: "Expand Form A" })).toBeVisible();
     expect(within(restored).queryByRole("button", { name: "Email" })).not.toBeInTheDocument();
+  });
+});
+
+describe("selected-form context ownership", () => {
+  it("keeps canonical provider inputs stable across search, settings, and parent renders", async () => {
+    const user = userEvent.setup();
+    const props = setup();
+    const getGroups = vi.fn<SourceProvider["getGroups"]>().mockResolvedValue([customGroup]);
+    const registry = createSourceRegistry([{ id: "extra", getGroups }]);
+    const selections = [{ id: "extra" }];
+    const view = render(<PrefillEditor {...props} selections={selections} registry={registry} />);
+    expect(getGroups).not.toHaveBeenCalled();
+    await openD(user);
+    await choose(user, "Extra source", "Custom email");
+    const form = props.blueprint.forms.find((candidate) => candidate.name === "Form D")!;
+    const context = getGroups.mock.calls[0]![0];
+    expect(context.blueprint).toBe(props.blueprint);
+    expect(context.dependencies).toBe(props.dependencies);
+    expect(context.targetForm).toBe(form);
+    expect(context.targetField).toBe(form.fields[0]);
+    await user.type(screen.getByRole("searchbox"), "Custom");
+    view.rerender(<PrefillEditor {...props} selections={selections} registry={registry} />);
+    expect(getGroups).toHaveBeenCalledTimes(1);
+    await user.click(screen.getByRole("button", { name: "Select" }));
+    await waitFor(() => expect(getGroups).toHaveBeenCalledTimes(2));
+    const availabilityContext = getGroups.mock.calls[1]![0];
+    expect(availabilityContext.targetForm).toBe(form);
+    expect(availabilityContext.targetField).toBe(form.fields[0]);
+    await user.click(screen.getByRole("switch", { name: "Enable prefill for Form D" }));
+    await user.click(screen.getByRole("switch", { name: "Enable prefill for Form D" }));
+    view.rerender(<PrefillEditor {...props} selections={selections} registry={registry} />);
+    expect(getGroups).toHaveBeenCalledTimes(2);
+    expect(screen.getByRole("button", { name: "Replace prefill for Email" })).toHaveTextContent(
+      "Extra source · Custom email",
+    );
+  });
+
+  it("requests the current canonical field after navigation and preserves the earlier mapping", async () => {
+    const user = userEvent.setup();
+    const props = setup();
+    const getGroups = vi.fn<SourceProvider["getGroups"]>().mockResolvedValue([customGroup]);
+    const registry = createSourceRegistry([{ id: "extra", getGroups }]);
+    render(<PrefillEditor {...props} selections={[{ id: "extra" }]} registry={registry} />);
+    await openD(user);
+    await choose(user, "Extra source", "Custom email");
+    await user.click(screen.getByRole("button", { name: "Select" }));
+    await waitFor(() => expect(getGroups).toHaveBeenCalledTimes(2));
+    await user.click(screen.getByRole("button", { name: "Form E" }));
+    expect(getGroups).toHaveBeenCalledTimes(2);
+    await user.click(screen.getByRole("button", { name: "Set prefill for Name" }));
+    await screen.findByRole("group", { name: "Extra source" });
+    const context = getGroups.mock.calls.at(-1)![0];
+    const form = props.blueprint.forms.find((candidate) => candidate.name === "Form E")!;
+    expect(context.targetForm).toBe(form);
+    expect(context.targetField).toBe(form.fields[1]);
+    await user.click(screen.getByRole("button", { name: "Cancel" }));
+    expect(screen.getByRole("button", { name: "Set prefill for Name" })).toHaveFocus();
+    await user.click(screen.getByRole("button", { name: "Form D" }));
+    expect(screen.getByRole("button", { name: "Replace prefill for Email" })).toHaveTextContent(
+      "Extra source · Custom email",
+    );
+    expect(screen.getByText("1 of 2 fields mapped")).toBeVisible();
   });
 });

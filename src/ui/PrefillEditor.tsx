@@ -6,11 +6,9 @@ import { sourceReferenceKey } from "../sources/model";
 import type { SourceReference, SourceSelection } from "../sources/model";
 import { sourceRegistry } from "../sources/registry";
 import type { SourceRegistry } from "../sources/registry";
-import { getMapping } from "../mappings/reducer";
 import { usePrefillMappings } from "../mappings/usePrefillMappings";
 import { FormBrowser } from "./FormBrowser";
-import { FormFields } from "./FormFields";
-import { MappingControls } from "./MappingControls";
+import { PrefillForm } from "./PrefillForm";
 import { SourceDialog } from "./SourceDialog";
 
 type ActiveTarget = {
@@ -48,27 +46,24 @@ export function PrefillEditor({
     )
       setActiveTarget(null);
   }, [activeTarget, blueprint, selections]);
-  const contexts = useMemo(
-    () =>
-      new Map(
-        blueprint.forms.map((form) => [
-          form.nodeId,
-          new Map(
-            form.fields.map((field) => [
-              field.key,
-              { blueprint, dependencies, targetForm: form, targetField: field },
-            ]),
-          ),
-        ]),
-      ),
-    [blueprint, dependencies],
-  );
   const currentTarget =
     activeTarget?.blueprint === blueprint &&
     activeTarget.selections === selections &&
     !disabledForms.has(formKey(activeTarget.form.nodeId))
       ? activeTarget
       : null;
+  const dialogContext = useMemo(
+    () =>
+      currentTarget
+        ? {
+            blueprint,
+            dependencies,
+            targetForm: currentTarget.form,
+            targetField: currentTarget.field,
+          }
+        : null,
+    [blueprint, dependencies, currentTarget],
+  );
   function setFormEditing(nodeId: string, enabled: boolean) {
     closeDialog();
     setDisabledForms((previous) => {
@@ -106,59 +101,25 @@ export function PrefillEditor({
         blueprint={blueprint}
         onSelect={closeDialog}
         renderFields={(form) => (
-          <FormFields
+          <PrefillForm
+            blueprint={blueprint}
+            dependencies={dependencies}
             form={form}
-            header={
-              <div className="prefill-settings">
-                <span className="mapping-count">
-                  {counts.get(form.nodeId)!.mapped} of {counts.get(form.nodeId)!.total} fields
-                  mapped
-                </span>
-                <label className="prefill-toggle">
-                  <input
-                    type="checkbox"
-                    role="switch"
-                    aria-label={`Enable prefill for ${form.name}`}
-                    checked={!disabledForms.has(formKey(form.nodeId))}
-                    onChange={(event) => setFormEditing(form.nodeId, event.target.checked)}
-                  />
-                  Prefill {disabledForms.has(formKey(form.nodeId)) ? "off" : "on"}
-                </label>
-                {disabledForms.has(formKey(form.nodeId)) && (
-                  <p className="prefill-paused">Editing is off. Existing mappings are preserved.</p>
-                )}
-              </div>
-            }
-            renderControls={(field) => {
-              const target = {
-                blueprintId: blueprint.id,
-                nodeId: form.nodeId,
-                fieldKey: field.key,
-              };
-              const mapping = getMapping(state, target);
-              const label =
-                mapping &&
-                (sourceLabels[sourceReferenceKey(mapping)] ??
-                  `${mapping.resourceId} · ${mapping.fieldPath.join(" → ")}`);
-              return (
-                <MappingControls
-                  context={contexts.get(form.nodeId)!.get(field.key)!}
-                  selections={selections}
-                  registry={registry}
-                  editingDisabled={disabledForms.has(formKey(form.nodeId))}
-                  mapping={mapping}
-                  fallbackLabel={label || undefined}
-                  onOpen={() => openField(form, field)}
-                  onClear={() => clearMapping(target)}
-                />
-              );
-            }}
+            count={counts.get(form.nodeId)!}
+            mappingState={state}
+            sourceLabels={sourceLabels}
+            selections={selections}
+            registry={registry}
+            editingEnabled={!disabledForms.has(formKey(form.nodeId))}
+            onEditingChange={(enabled) => setFormEditing(form.nodeId, enabled)}
+            onOpen={(field) => openField(form, field)}
+            onClear={clearMapping}
           />
         )}
       />
-      {currentTarget && (
+      {currentTarget && dialogContext && (
         <SourceDialog
-          context={contexts.get(currentTarget.form.nodeId)!.get(currentTarget.field.key)!}
+          context={dialogContext}
           selections={currentTarget.selections}
           registry={registry}
           onClose={closeDialog}

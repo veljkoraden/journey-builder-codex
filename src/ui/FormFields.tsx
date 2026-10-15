@@ -1,4 +1,4 @@
-import type { ReactNode } from "react";
+import type { ReactNode, Ref } from "react";
 import type { FormField, FormInstance } from "../blueprint/model";
 import { isPrefillField } from "../blueprint/fieldPolicy";
 
@@ -6,14 +6,21 @@ export function FormFields({
   form,
   renderControls,
   header,
+  regionRef,
 }: {
   form: FormInstance;
   header?: ReactNode;
+  regionRef?: Ref<HTMLElement>;
   renderControls?: (field: FormField) => ReactNode;
 }) {
   const fields = form.fields.filter(isPrefillField);
   return (
-    <section tabIndex={-1} className="form-detail" aria-label={`${form.name} fields`}>
+    <section
+      ref={regionRef}
+      tabIndex={-1}
+      className="form-detail"
+      aria-label={`${form.name} fields`}
+    >
       <div className="form-detail-heading">
         <h3>{form.name}</h3>
         {header}

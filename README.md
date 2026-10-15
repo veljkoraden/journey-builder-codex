@@ -131,8 +131,10 @@ merge, deployment, and submission are separate milestones. See the
 readability and extensibility improvements. [O1: readability and tooling](docs/optimization-o1-readability.md)
 documents the first increment and its React walkthrough.
 [O2: shared catalog decisions](docs/optimization-o2-catalog-decisions.md) centralizes
-lookup, labels, search, and mapping availability. O3 will address editor composition
-and context ownership; runtime provider configuration remains unchanged.
+lookup, labels, search, and mapping availability.
+[O3: editor composition](docs/optimization-o3-editor-composition.md) separates selected-form
+presentation and creates stable contexts near their consumers. Runtime provider
+configuration remains unchanged; O4 will evaluate mapping state and request simplification.
 
 Formatting applies to owned source/tests, CSS, browser harness TypeScript, and
 root TypeScript/JavaScript configuration. It excludes Markdown, JSON, generated
