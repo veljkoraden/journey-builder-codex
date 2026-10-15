@@ -33,7 +33,8 @@ export function useBlueprint(endpoint: string | null) {
             attempt,
             state: {
               status: "error",
-              message: error instanceof Error ? error.message : "Unable to load the blueprint. Try again.",
+              message:
+                error instanceof Error ? error.message : "Unable to load the blueprint. Try again.",
             },
           });
         }
@@ -43,11 +44,12 @@ export function useBlueprint(endpoint: string | null) {
   }, [endpoint, attempt]);
 
   // Do not expose a previous blueprint while a new effect is being scheduled.
-  const state: BlueprintState = endpoint === null
-    ? { status: "idle" }
-    : result.endpoint === endpoint && result.attempt === attempt
-      ? result.state
-      : { status: "loading" };
+  const state: BlueprintState =
+    endpoint === null
+      ? { status: "idle" }
+      : result.endpoint === endpoint && result.attempt === attempt
+        ? result.state
+        : { status: "loading" };
 
   return { state, retry: () => setAttempt((value) => value + 1) };
 }

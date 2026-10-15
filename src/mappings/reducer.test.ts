@@ -5,8 +5,16 @@ import { mappingTargetKey } from "./model";
 import { createMappingState, getMapping, mappingReducer } from "./reducer";
 
 const target: MappingTarget = { blueprintId: "blueprint", nodeId: "D", fieldKey: "email" };
-const source: SourceReference = { providerId: "indirect-forms", resourceId: "A", fieldPath: ["email"] };
-const replacement: SourceReference = { providerId: "global-properties", resourceId: "organization", fieldPath: ["support_email"] };
+const source: SourceReference = {
+  providerId: "indirect-forms",
+  resourceId: "A",
+  fieldPath: ["email"],
+};
+const replacement: SourceReference = {
+  providerId: "global-properties",
+  resourceId: "organization",
+  fieldPath: ["support_email"],
+};
 function set(state: MappingState, destination = target, reference = source) {
   return mappingReducer(state, { type: "set", target: destination, source: reference });
 }
@@ -50,7 +58,9 @@ describe("mapping state", () => {
   });
   it("clearing an unmapped target is safe and leaves existing entries alone", () => {
     const state = set(createMappingState());
-    expect(mappingReducer(state, { type: "clear", target: { ...target, nodeId: "missing" } })).toBe(state);
+    expect(mappingReducer(state, { type: "clear", target: { ...target, nodeId: "missing" } })).toBe(
+      state,
+    );
   });
   it("reselecting the same reference is a no-op, regardless of object identity", () => {
     const state = set(createMappingState());
@@ -65,13 +75,18 @@ describe("mapping state", () => {
     expect(getMapping(set(state, target, next), target)).toEqual(next);
     expect(getMapping(state, target)).toEqual(source);
   });
-  it.each(["__proto__", "constructor", "toString", "a.b", "a:b", 'a"b', "a/b", "", "顧客"])("supports literal target keys %j", (fieldKey) => {
-    const special = { blueprintId: fieldKey, nodeId: fieldKey, fieldKey };
-    const state = set(set(createMappingState()), special, replacement);
-    expect(getMapping(state, special)).toEqual(replacement);
-    expect(getMapping(state, target)).toEqual(source);
-    expect(getMapping(mappingReducer(state, { type: "clear", target: special }), target)).toEqual(source);
-  });
+  it.each(["__proto__", "constructor", "toString", "a.b", "a:b", 'a"b', "a/b", "", "顧客"])(
+    "supports literal target keys %j",
+    (fieldKey) => {
+      const special = { blueprintId: fieldKey, nodeId: fieldKey, fieldKey };
+      const state = set(set(createMappingState()), special, replacement);
+      expect(getMapping(state, special)).toEqual(replacement);
+      expect(getMapping(state, target)).toEqual(source);
+      expect(getMapping(mappingReducer(state, { type: "clear", target: special }), target)).toEqual(
+        source,
+      );
+    },
+  );
   it("does not collide when delimiters move between target identity parts", () => {
     const left = { blueprintId: "a:b", nodeId: "c", fieldKey: "d" };
     const right = { blueprintId: "a", nodeId: "b:c", fieldKey: "d" };
@@ -106,8 +121,11 @@ describe("mapping state", () => {
     expect(getMapping(state, target)).toEqual(source);
   });
   it("does not mutate frozen actions, sources or targets", () => {
-    const action = Object.freeze({ type: "set" as const, target: Object.freeze({ ...target }),
-      source: Object.freeze({ ...source, fieldPath: Object.freeze(["email"]) }) });
+    const action = Object.freeze({
+      type: "set" as const,
+      target: Object.freeze({ ...target }),
+      source: Object.freeze({ ...source, fieldPath: Object.freeze(["email"]) }),
+    });
     expect(getMapping(mappingReducer(createMappingState(), action), target)).toEqual(source);
   });
   it("retains references when a provider is later unavailable", () => {
@@ -118,12 +136,18 @@ describe("mapping state", () => {
     expect(getMapping(mappingReducer(state, { type: "clear", target }), target)).toBeUndefined();
   });
   it("supports repeated independent edits against a simple reference model", () => {
-    const targets = ["bp-1", "bp-2", "bp-3"].flatMap((blueprintId) => ["A", "B", "C"].flatMap((nodeId) =>
-      ["email", "object", "array"].map((fieldKey) => ({ blueprintId, nodeId, fieldKey }))));
+    const targets = ["bp-1", "bp-2", "bp-3"].flatMap((blueprintId) =>
+      ["A", "B", "C"].flatMap((nodeId) =>
+        ["email", "object", "array"].map((fieldKey) => ({ blueprintId, nodeId, fieldKey })),
+      ),
+    );
     const expected: (SourceReference | undefined)[] = Array.from({ length: targets.length });
     let state = createMappingState();
     let seed = 12345;
-    const random = () => { seed = (Math.imul(seed, 1664525) + 1013904223) >>> 0; return seed; };
+    const random = () => {
+      seed = (Math.imul(seed, 1664525) + 1013904223) >>> 0;
+      return seed;
+    };
     for (let step = 0; step < 500; step += 1) {
       const index = random() % targets.length;
       const destination = targets[index]!;

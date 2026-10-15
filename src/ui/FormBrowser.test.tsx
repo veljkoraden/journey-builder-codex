@@ -24,10 +24,18 @@ describe("form browser", () => {
   it("sorts names alphabetically without case sensitivity or mutating API order", () => {
     const data = blueprint();
     const names = ["zebra", "Beta", "alpha"];
-    const forms = Object.freeze(data.forms.map((form, index) => ({ ...form, name: names[index]! })));
+    const forms = Object.freeze(
+      data.forms.map((form, index) => ({ ...form, name: names[index]! })),
+    );
     render(<FormBrowser blueprint={{ ...data, forms }} />);
-    const buttons = within(screen.getByRole("navigation", { name: "Forms" })).getAllByRole("button");
-    expect(buttons.map((button) => button.getAttribute("aria-label"))).toEqual(["alpha", "Beta", "zebra"]);
+    const buttons = within(screen.getByRole("navigation", { name: "Forms" })).getAllByRole(
+      "button",
+    );
+    expect(buttons.map((button) => button.getAttribute("aria-label"))).toEqual([
+      "alpha",
+      "Beta",
+      "zebra",
+    ]);
     expect(buttons[0]).toHaveAttribute("aria-pressed", "true");
     expect(screen.getByRole("region", { name: "alpha fields" })).toHaveTextContent("Age");
     expect(forms.map((form) => form.name)).toEqual(names);
@@ -39,20 +47,26 @@ describe("form browser", () => {
     const counts = new Map([["node-b", { mapped: 1, total: 3 }]]);
     const { rerender } = render(<FormBrowser blueprint={data} counts={counts} />);
     await user.click(screen.getByRole("button", { name: "Form B" }));
-    const forms = data.forms.map((form) => form.nodeId === "node-b" ? { ...form, name: "AAA renamed" } : form);
+    const forms = data.forms.map((form) =>
+      form.nodeId === "node-b" ? { ...form, name: "AAA renamed" } : form,
+    );
     rerender(<FormBrowser blueprint={{ ...data, forms }} counts={counts} />);
     const selected = screen.getByRole("button", { name: "AAA renamed" });
     expect(screen.getAllByRole("button")[0]).toBe(selected);
     expect(selected).toHaveAttribute("aria-pressed", "true");
     expect(selected).toHaveAccessibleDescription("1 of 3 mapped");
-    expect(screen.getByRole("region", { name: "AAA renamed fields" })).toHaveTextContent("Email address");
+    expect(screen.getByRole("region", { name: "AAA renamed fields" })).toHaveTextContent(
+      "Email address",
+    );
   });
 
   it("selects a separate node sharing the same form definition", async () => {
     const user = userEvent.setup();
     render(<FormBrowser blueprint={blueprint()} />);
     await user.click(screen.getByRole("button", { name: "Form B" }));
-    expect(screen.getByRole("region", { name: "Form B fields" })).toHaveTextContent("Email address");
+    expect(screen.getByRole("region", { name: "Form B fields" })).toHaveTextContent(
+      "Email address",
+    );
     expect(screen.getByRole("button", { name: "Form A" })).toHaveAttribute("aria-pressed", "false");
     expect(screen.getByRole("button", { name: "Form B" })).toHaveAttribute("aria-pressed", "true");
   });
@@ -60,7 +74,9 @@ describe("form browser", () => {
   it("changes visible fields using only the keyboard", async () => {
     const user = userEvent.setup();
     render(<FormBrowser blueprint={blueprint()} />);
-    await user.tab(); await user.tab(); await user.tab();
+    await user.tab();
+    await user.tab();
+    await user.tab();
     expect(screen.getByRole("button", { name: "Form C" })).toHaveFocus();
     await user.keyboard("{Enter}");
     const detail = screen.getByRole("region", { name: "Form C fields" });
@@ -71,7 +87,11 @@ describe("form browser", () => {
   it("keeps duplicate names selectable as distinct nodes", async () => {
     const user = userEvent.setup();
     const data = blueprint();
-    render(<FormBrowser blueprint={{ ...data, forms: data.forms.map((form) => ({ ...form, name: "Duplicate" })) }} />);
+    render(
+      <FormBrowser
+        blueprint={{ ...data, forms: data.forms.map((form) => ({ ...form, name: "Duplicate" })) }}
+      />,
+    );
     const buttons = screen.getAllByRole("button", { name: "Duplicate" });
     await user.click(buttons[2]!);
     expect(buttons[2]).toHaveAttribute("aria-pressed", "true");
@@ -86,7 +106,10 @@ describe("form browser", () => {
 
   it.each(["empty", "buttons only"])("shows a no-fields state for %s definitions", (mode) => {
     const data = blueprint();
-    const forms = data.forms.map((form) => ({ ...form, fields: mode === "empty" ? [] : form.fields.filter((field) => field.controlType === "button") }));
+    const forms = data.forms.map((form) => ({
+      ...form,
+      fields: mode === "empty" ? [] : form.fields.filter((field) => field.controlType === "button"),
+    }));
     render(<FormBrowser blueprint={{ ...data, forms }} />);
     expect(screen.getByRole("status")).toHaveTextContent("This form has no prefillable fields.");
   });
@@ -96,13 +119,24 @@ describe("form browser", () => {
     const data = blueprint();
     const { rerender } = render(<FormBrowser blueprint={data} />);
     await user.click(screen.getByRole("button", { name: "Form B" }));
-    rerender(<FormBrowser blueprint={{ ...data, forms: data.forms.filter((form) => form.nodeId !== "node-b") }} />);
+    rerender(
+      <FormBrowser
+        blueprint={{ ...data, forms: data.forms.filter((form) => form.nodeId !== "node-b") }}
+      />,
+    );
     expect(screen.getByRole("region", { name: "Form A fields" })).toBeVisible();
   });
 
   it("renders server labels as text rather than markup", () => {
     const data = blueprint();
-    render(<FormBrowser blueprint={{ ...data, forms: data.forms.map((form) => ({ ...form, name: "<img src=x onerror=alert(1)>" })) }} />);
+    render(
+      <FormBrowser
+        blueprint={{
+          ...data,
+          forms: data.forms.map((form) => ({ ...form, name: "<img src=x onerror=alert(1)>" })),
+        }}
+      />,
+    );
     expect(screen.queryByRole("img")).not.toBeInTheDocument();
     expect(screen.getAllByRole("button")[0]).toHaveTextContent("<img src=x onerror=alert(1)>");
   });

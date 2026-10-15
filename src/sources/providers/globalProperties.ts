@@ -7,18 +7,24 @@ export const globalProperties: SourceProvider = {
   async getGroups(_context, settings, signal) {
     signal.throwIfAborted();
     rejectSettings(settings);
-    return [{
-      id: "sample-organization",
-      label: "Sample organization",
-      description: "Global data",
-      options: [
-        { key: "name", label: "Organization name" },
-        { key: "support_email", label: "Support email" },
-      ].map(({ key, label }) => ({
-        reference: { providerId: "global-properties", resourceId: "sample-organization", fieldPath: [key] },
-        label,
-        types: ["string"],
-      })),
-    }];
+    return [
+      {
+        id: "sample-organization",
+        label: "Sample organization",
+        description: "Global data",
+        options: [
+          { key: "name", label: "Organization name" },
+          { key: "support_email", label: "Support email" },
+        ].map(({ key, label }) => ({
+          reference: {
+            providerId: "global-properties",
+            resourceId: "sample-organization",
+            fieldPath: [key],
+          },
+          label,
+          types: ["string"],
+        })),
+      },
+    ];
   },
 };

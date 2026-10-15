@@ -9,8 +9,9 @@ function formProvider(id: string, scope: "direct" | "indirect"): SourceProvider 
     async getGroups(context, settings, signal) {
       signal.throwIfAborted();
       rejectSettings(settings);
-      return context.dependencies.getUpstreamForms(context.targetForm.nodeId)[scope]
-        .filter((form) => form.fields.length > 0)
+      return context.dependencies
+        .getUpstreamForms(context.targetForm.nodeId)
+        [scope].filter((form) => form.fields.length > 0)
         .map((form) => ({
           id: form.nodeId,
           label: form.name,

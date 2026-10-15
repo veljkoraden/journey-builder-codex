@@ -28,10 +28,13 @@ it("retains multiple updates batched in one event", () => {
   expect(getMapping(result.current.state, other)?.resourceId).toBe("C");
 });
 it("retains mappings when the owner rerenders with another selected form", () => {
-  const { result, rerender } = renderHook(({ nodeId }) => {
-    const mappings = usePrefillMappings();
-    return { ...mappings, selected: { ...target, nodeId } };
-  }, { initialProps: { nodeId: "D" } });
+  const { result, rerender } = renderHook(
+    ({ nodeId }) => {
+      const mappings = usePrefillMappings();
+      return { ...mappings, selected: { ...target, nodeId } };
+    },
+    { initialProps: { nodeId: "D" } },
+  );
   act(() => result.current.setMapping(result.current.selected, source));
   rerender({ nodeId: "E" });
   expect(getMapping(result.current.state, result.current.selected)).toBeUndefined();

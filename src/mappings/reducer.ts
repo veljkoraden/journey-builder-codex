@@ -7,7 +7,10 @@ export function createMappingState(): MappingState {
   return Object.freeze({});
 }
 
-export function getMapping(state: MappingState, target: MappingTarget): SourceReference | undefined {
+export function getMapping(
+  state: MappingState,
+  target: MappingTarget,
+): SourceReference | undefined {
   return state[mappingTargetKey(target)];
 }
 

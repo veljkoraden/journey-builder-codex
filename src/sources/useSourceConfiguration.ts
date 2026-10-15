@@ -10,20 +10,36 @@ type ConfigurationState =
 
 export function useSourceConfiguration(url = sourceConfigurationUrl(import.meta.env.BASE_URL)) {
   const [attempt, setAttempt] = useState(0);
-  const [result, setResult] = useState<{ url: string; attempt: number; state: ConfigurationState }>();
+  const [result, setResult] = useState<{
+    url: string;
+    attempt: number;
+    state: ConfigurationState;
+  }>();
   useEffect(() => {
     const controller = new AbortController();
     void loadSourceConfiguration(controller.signal, sourceRegistry, url).then(
       (selections) => {
-        if (!controller.signal.aborted) setResult({ url, attempt, state: { status: "success", selections } });
+        if (!controller.signal.aborted)
+          setResult({ url, attempt, state: { status: "success", selections } });
       },
       (error: unknown) => {
-        if (!controller.signal.aborted) setResult({ url, attempt, state: { status: "error", message:
-          error instanceof Error ? error.message : "Unable to load source configuration. Retry." } });
+        if (!controller.signal.aborted)
+          setResult({
+            url,
+            attempt,
+            state: {
+              status: "error",
+              message:
+                error instanceof Error
+                  ? error.message
+                  : "Unable to load source configuration. Retry.",
+            },
+          });
       },
     );
     return () => controller.abort();
   }, [url, attempt]);
-  const state: ConfigurationState = result?.url === url && result.attempt === attempt ? result.state : { status: "loading" };
+  const state: ConfigurationState =
+    result?.url === url && result.attempt === attempt ? result.state : { status: "loading" };
   return { state, retry: () => setAttempt((value) => value + 1) };
 }

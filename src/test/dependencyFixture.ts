@@ -4,13 +4,24 @@ import type { Blueprint } from "../blueprint/model";
 export function dependencyFixture(
   ids: readonly string[] = ["A", "B", "C", "D", "E", "F"],
   pairs: readonly (readonly [string, string])[] = [
-    ["A", "B"], ["A", "C"], ["B", "D"], ["C", "E"], ["D", "F"], ["E", "F"],
+    ["A", "B"],
+    ["A", "C"],
+    ["B", "D"],
+    ["C", "E"],
+    ["D", "F"],
+    ["E", "F"],
   ],
 ): Blueprint {
   return {
-    id: "dependencies", name: "Dependencies",
+    id: "dependencies",
+    name: "Dependencies",
     nodes: ids.map((id) => ({ id, type: "form", prerequisites: null })),
     edges: pairs.map(([source, target]) => ({ source, target })),
-    forms: ids.map((nodeId) => ({ nodeId, definitionId: "shared", name: `Form ${nodeId}`, fields: [] })),
+    forms: ids.map((nodeId) => ({
+      nodeId,
+      definitionId: "shared",
+      name: `Form ${nodeId}`,
+      fields: [],
+    })),
   };
 }

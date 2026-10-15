@@ -15,7 +15,12 @@ beforeEach(() => {
   vi.stubEnv("VITE_API_BASE_URL", "http://localhost:3000");
   vi.stubEnv("VITE_TENANT_ID", "1");
   vi.stubEnv("VITE_BLUEPRINT_ID", "test");
-  vi.stubGlobal("fetch", vi.fn().mockImplementation(() => Promise.resolve(new Response(JSON.stringify(blueprintFixture())))));
+  vi.stubGlobal(
+    "fetch",
+    vi
+      .fn()
+      .mockImplementation(() => Promise.resolve(new Response(JSON.stringify(blueprintFixture())))),
+  );
 });
 afterEach(() => {
   vi.unstubAllGlobals();
@@ -26,7 +31,9 @@ describe("application connection view", () => {
   it("preserves a clear heading and named workspace", async () => {
     render(<App />);
     expect(screen.getByRole("banner")).toHaveTextContent("Journey Builder");
-    expect(within(screen.getByRole("main")).getByRole("heading", { level: 1, name: "Journey Builder" })).toBeVisible();
+    expect(
+      within(screen.getByRole("main")).getByRole("heading", { level: 1, name: "Journey Builder" }),
+    ).toBeVisible();
     expect(screen.getAllByRole("heading", { level: 1 })).toHaveLength(1);
     expect(screen.getByRole("region", { name: "Your form workspace" })).toBeVisible();
     expect(await screen.findByRole("button", { name: "Form A" })).toBeVisible();
@@ -41,11 +48,15 @@ describe("application connection view", () => {
   it("shows session-only mapping controls", async () => {
     render(<App />);
     expect(await screen.findByRole("button", { name: "Form A" })).toBeVisible();
-    expect(screen.getByRole("region", { name: "Form A fields" })).toHaveTextContent("Edits are kept in this session only.");
+    expect(screen.getByRole("region", { name: "Form A fields" })).toHaveTextContent(
+      "Edits are kept in this session only.",
+    );
   });
 
   it("allows keyboard retry after a server error", async () => {
-    const request = vi.fn().mockResolvedValueOnce(new Response("failure", { status: 503 }))
+    const request = vi
+      .fn()
+      .mockResolvedValueOnce(new Response("failure", { status: 503 }))
       .mockResolvedValueOnce(new Response(JSON.stringify(blueprintFixture())));
     vi.stubGlobal("fetch", request);
     const user = userEvent.setup();
@@ -62,9 +73,13 @@ describe("application connection view", () => {
 
   it("shows a validation error instead of a partial form list, then recovers on retry", async () => {
     const fixture = blueprintFixture();
-    vi.stubGlobal("fetch", vi.fn()
-      .mockResolvedValueOnce(new Response(JSON.stringify({ ...fixture, forms: [] })))
-      .mockResolvedValueOnce(new Response(JSON.stringify(fixture))));
+    vi.stubGlobal(
+      "fetch",
+      vi
+        .fn()
+        .mockResolvedValueOnce(new Response(JSON.stringify({ ...fixture, forms: [] })))
+        .mockResolvedValueOnce(new Response(JSON.stringify(fixture))),
+    );
     const user = userEvent.setup();
     render(<App />);
     expect(await screen.findByRole("alert")).toHaveTextContent("missing form definition");
@@ -74,31 +89,53 @@ describe("application connection view", () => {
   });
 
   it("shows an empty state for a valid empty graph", async () => {
-    vi.stubGlobal("fetch", vi.fn().mockResolvedValue(new Response(JSON.stringify({ id: "empty", nodes: [], edges: [], forms: [] }))));
+    vi.stubGlobal(
+      "fetch",
+      vi
+        .fn()
+        .mockResolvedValue(
+          new Response(JSON.stringify({ id: "empty", nodes: [], edges: [], forms: [] })),
+        ),
+    );
     render(<App />);
     expect(await screen.findByText("This blueprint has no forms.")).toBeVisible();
     expect(screen.queryByRole("alert")).not.toBeInTheDocument();
   });
 
-  it.each(["cycle", "missing endpoint", "disagreement"])("blocks a %s and retries successfully", async (failure) => {
-    const fixture = blueprintFixture();
-    const broken = {
-      ...fixture,
-      nodes: fixture.nodes.map((node) => ({ ...node, data: { ...node.data, prerequisites: undefined } })),
-      edges: failure === "cycle" ? [...fixture.edges, { source: "node-b", target: "node-a" }]
-        : failure === "missing endpoint" ? [{ source: "missing", target: "node-a" }] : [],
-    };
-    const invalid = failure === "disagreement" ? { ...fixture, edges: [] } : broken;
-    vi.stubGlobal("fetch", vi.fn().mockResolvedValueOnce(new Response(JSON.stringify(invalid)))
-      .mockResolvedValueOnce(new Response(JSON.stringify(fixture))));
-    const user = userEvent.setup();
-    render(<App />);
-    expect(await screen.findByRole("alert")).toHaveTextContent("Invalid blueprint dependencies");
-    expect(screen.queryByRole("navigation", { name: "Forms" })).not.toBeInTheDocument();
-    await user.click(screen.getByRole("button", { name: "Try again" }));
-    expect(await screen.findByRole("button", { name: "Form A" })).toBeVisible();
-    expect(screen.queryByRole("alert")).not.toBeInTheDocument();
-  });
+  it.each(["cycle", "missing endpoint", "disagreement"])(
+    "blocks a %s and retries successfully",
+    async (failure) => {
+      const fixture = blueprintFixture();
+      const broken = {
+        ...fixture,
+        nodes: fixture.nodes.map((node) => ({
+          ...node,
+          data: { ...node.data, prerequisites: undefined },
+        })),
+        edges:
+          failure === "cycle"
+            ? [...fixture.edges, { source: "node-b", target: "node-a" }]
+            : failure === "missing endpoint"
+              ? [{ source: "missing", target: "node-a" }]
+              : [],
+      };
+      const invalid = failure === "disagreement" ? { ...fixture, edges: [] } : broken;
+      vi.stubGlobal(
+        "fetch",
+        vi
+          .fn()
+          .mockResolvedValueOnce(new Response(JSON.stringify(invalid)))
+          .mockResolvedValueOnce(new Response(JSON.stringify(fixture))),
+      );
+      const user = userEvent.setup();
+      render(<App />);
+      expect(await screen.findByRole("alert")).toHaveTextContent("Invalid blueprint dependencies");
+      expect(screen.queryByRole("navigation", { name: "Forms" })).not.toBeInTheDocument();
+      await user.click(screen.getByRole("button", { name: "Try again" }));
+      expect(await screen.findByRole("button", { name: "Form A" })).toBeVisible();
+      expect(screen.queryByRole("alert")).not.toBeInTheDocument();
+    },
+  );
 
   it("reports invalid configuration without sending a request", () => {
     vi.stubEnv("VITE_API_BASE_URL", "invalid");
@@ -123,7 +160,11 @@ describe("application connection view", () => {
   });
 
   it("renders one successful workspace under StrictMode", async () => {
-    render(<StrictMode><App /></StrictMode>);
+    render(
+      <StrictMode>
+        <App />
+      </StrictMode>,
+    );
     expect(await screen.findByRole("button", { name: "Form A" })).toBeVisible();
     expect(screen.getAllByRole("main")).toHaveLength(1);
     expect(screen.getAllByRole("region", { name: "Your form workspace" })).toHaveLength(1);
