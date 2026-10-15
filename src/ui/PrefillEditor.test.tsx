@@ -365,9 +365,25 @@ describe("prefill editor interactions", () => {
   });
   it("shows provider-supplied source descriptions without interpreting provider IDs", async () => {
     const user = userEvent.setup(); render(<PrefillEditor {...setup()} />); await openD(user);
-    expect(await screen.findByText("Direct dependency")).toBeVisible();
-    expect(screen.getByText("Indirect dependency")).toBeVisible();
+    expect(await screen.findByText("Direct")).toBeVisible();
+    expect(screen.getByText("Transitive")).toBeVisible();
     expect(screen.getByText("Global data")).toBeVisible();
+  });
+
+  it("labels F's immediate and transitive dependencies beside their form names", async () => {
+    const user = userEvent.setup(); render(<PrefillEditor {...setup()} />);
+    await user.click(screen.getByRole("button", { name: "Form F" }));
+    await user.click(screen.getByRole("button", { name: "Set prefill for Email" }));
+    const relationships = [["Form D", "Direct"], ["Form E", "Direct"],
+      ["Form A", "Transitive"], ["Form B", "Transitive"], ["Form C", "Transitive"]] as const;
+    for (const [name, relationship] of relationships) {
+      const group = await screen.findByRole("group", { name });
+      expect(group.querySelector("legend")).toHaveTextContent(`${name} ${relationship}`);
+      expect(group).toHaveAccessibleDescription(relationship);
+      await user.click(within(group).getByRole("button", { name: `Collapse ${name}` }));
+      expect(within(group).getByText(relationship)).toBeVisible();
+      expect(within(group).queryByRole("button", { name: "Email" })).not.toBeInTheDocument();
+    }
   });
 
 });
