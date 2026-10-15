@@ -304,4 +304,4 @@ If time is tight, reduce decoration and optional toggle polish before reducing i
 - [x] Local checks and actual browser evidence are reported separately.
 - [x] README supports fresh setup and a live extension demonstration.
 
-Next action: review the open stacked PRs in dependency order, merge after review, and submit the repository link. There is no planned Phase 13. See [handoff](handoff.md) for remaining limitations.
+Next action: review the delivery-correction PR targeting main directly, merge after its checks pass, and submit the repository link. There is no planned Phase 13. See [handoff](handoff.md) for remaining limitations.

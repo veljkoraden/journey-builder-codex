@@ -21,11 +21,14 @@ data, graph traversal, source failures, cancellation, and mapping isolation.
 Neither test layer proves a production deployment, real customer data, or backend
 persistence.
 
-At handoff preparation, main includes through Phase 9. PR #9 (Phase 10) and PR #10
-(Phase 11) remain open. Phase 12 is stacked on `feat/phase-11-acceptance`; review and
-merge in that order, retargeting/rebasing later PRs as needed. Phase 11 GitHub CI
-passed; Phase 12 CI status belongs to its own PR, not that earlier result.
-No automatic merge, deployment, or challenge submission is performed.
+The delivery correction is based directly on main commit `84a8707`, which includes
+alphabetical forms and inline Direct/Transitive badges. Earlier Phase 11/12 PRs
+were merged into intermediate branches, so their tests and handoff files did not
+reach main. This branch restores them together; its PR targets main directly.
+See [delivery verification](delivery-verification.md) for current combined evidence.
+Historical phase documents retain their original validation results; they are not
+claims about the current merge or CI status. Review this corrective PR and its own
+CI before merging. No automatic merge, deployment, or submission is performed.
 
 ## Known limitations
 
@@ -56,5 +59,5 @@ traversal, stable reference identity, effect cleanup, and draft versus committed
 React state. Practice these with the walkthrough and extension example before the
 live session.
 
-There is no remaining planned implementation phase. Review/merge the PR chain,
+There is no remaining planned implementation phase. Review/merge the delivery correction,
 verify CI on the resulting branch, then submit the repository link yourself.

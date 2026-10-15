@@ -32,11 +32,18 @@ test("loads the pinned graph over HTTP and completes mapping, navigation, replac
   const graphResponse = page.waitForResponse(environment.graphUrl);
   await page.goto(environment.url);
   expect((await graphResponse).status()).toBe(200);
-  await expect(page.getByRole("navigation", { name: "Forms" }).getByRole("button")).toHaveCount(6);
+  await expect(page.getByRole("navigation", { name: "Forms" }).getByRole("button")).toHaveText([
+    "Form A0 of 7 mapped", "Form B0 of 7 mapped", "Form C0 of 7 mapped",
+    "Form D0 of 7 mapped", "Form E0 of 7 mapped", "Form F0 of 7 mapped",
+  ]);
   await selectForm(page); await openEmail(page);
   await expect(page.getByRole("button", { name: "Select", exact: true })).toBeDisabled();
-  await expect(page.getByText("Direct dependency", { exact: true })).toBeVisible();
-  await expect(page.getByText("Indirect dependency", { exact: true })).toBeVisible();
+  const direct = page.getByRole("group", { name: "Form B", exact: true });
+  const transitive = page.getByRole("group", { name: "Form A", exact: true });
+  await expect(direct).toHaveAccessibleDescription("Direct");
+  await expect(transitive).toHaveAccessibleDescription("Transitive");
+  await expect(direct.locator("legend")).toHaveText("Form B Direct");
+  await expect(transitive.locator("legend")).toHaveText("Form A Transitive");
   await chooseEmail(page); await screenshot(page, info, "selected-source"); await confirm(page);
   await expect(fieldButton(page)).toHaveText("Form A · Email");
   await expect(fieldButton(page)).toBeFocused();

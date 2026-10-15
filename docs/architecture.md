@@ -81,12 +81,14 @@ not the nested path `["contact", "email"]`.
 ## Where React state belongs
 
 - `App` owns runtime source configuration through a hook.
-- `FormBrowser` owns the selected form ID.
+- `FormBrowser` owns the selected form ID and sorts a copy of the forms by name,
+  ignoring capitalization. Initial/fallback selection uses the first sorted form.
 - `PrefillEditor` owns saved mappings, per-form editing switches, and the active
   dialog target. This owner stays mounted while forms change.
 - `SourceDialog` owns the temporary draft and search text. Cancel discards this
   state without dispatching a mapping action.
 - `SourceGroupChoices` owns expansion. Search temporarily reveals matches.
+  Provider descriptions appear as inline badges and accessible group descriptions.
 - Counts are derived from current fields and saved references rather than stored
   separately, preventing counts from drifting after edits.
 

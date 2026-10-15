@@ -1,5 +1,9 @@
 # Phase 12 — Documentation and tested extension handoff
 
+> Historical phase record. The original PR was merged into an intermediate branch.
+> See [delivery verification](delivery-verification.md) for the current restoration,
+> updated tests, and review status. Counts and PR states below describe the original run.
+
 ## What changed and why
 
 Earlier phases completed the application and browser acceptance. This phase makes

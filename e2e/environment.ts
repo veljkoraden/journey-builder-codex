@@ -76,7 +76,10 @@ export async function startEnvironment() {
     await new Promise<void>((resolve, reject) => { app.once("error", reject); app.listen(0, "127.0.0.1", resolve); });
     const address = app.address();
     if (!address || typeof address === "string") throw new Error("Missing app port");
-    const defaultConfiguration = await readFile(path.join(dist, "source-config.json"));
+    // Scenarios own their baseline; valid shipped subsets must not break acceptance.
+    const defaultConfiguration = JSON.stringify({ providers:
+      ["direct-forms", "indirect-forms", "global-properties"].map((id) => ({ id, enabled: true })),
+    });
     const graphPath = path.join(mockDirectory, "graph.json");
     return {
       url: `http://127.0.0.1:${address.port}/acceptance/`,

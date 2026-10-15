@@ -1,5 +1,9 @@
 # Phase 11 — Reproducible application acceptance
 
+> Historical phase record. The original PR was merged into an intermediate branch.
+> See [delivery verification](delivery-verification.md) for the current restoration,
+> updated tests, and review status. Counts and PR states below describe the original run.
+
 ## Outcome
 
 The repository now contains an executable browser acceptance suite. It replaces reliance on temporary scripts, previously installed browser tooling, and an already-running local mock server. The suite builds this checkout, starts an isolated pinned mock, and drives the real application through HTTP using the Chromium version locked with Playwright.

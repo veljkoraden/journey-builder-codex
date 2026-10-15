@@ -3,7 +3,8 @@
 An independent React + TypeScript implementation of the Avantos Journey Builder
 challenge. Browse forms, map a field from direct/indirect upstream forms or sample
 global properties, search sources, replace or clear mappings, and inspect source
-availability. Each form has a mapped-field count and a switch that pauses editing
+availability. Forms are sorted alphabetically, ignoring capitalization. Source
+group headers show Direct/Transitive badges beside form names. Each form has a mapped-field count and a switch that pauses editing
 without deleting its mappings.
 
 **Edits are session-only.** Reloading resets mappings and editing switches. The
@@ -96,6 +97,9 @@ npm run build
 npx playwright install chromium
 npm run test:e2e
 ```
+
+The shipped JSON is validated without requiring a fixed enabled subset. Browser
+scenarios set their own configuration, including all eight built-in combinations.
 
 The acceptance suite builds this checkout and starts its own isolated mock and
 app servers on available loopback ports. It needs no running dev server or `.env`.
