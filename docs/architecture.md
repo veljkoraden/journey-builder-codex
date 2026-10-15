@@ -129,3 +129,11 @@ Mappings, switches, and label snapshots are memory-only. Reload/unmount resets
 them. The mock exposes no save route; incoming nonempty server mapping contracts
 are unverified. Future tenant/version switching needs explicit scope or owner
 reset. See [handoff](handoff.md) for the complete limitations.
+
+## Shared catalog decisions (O2)
+
+`src/sources/catalog.ts` provides pure group selection, reference lookup, label
+formatting, and search. `src/mappings/availability.ts` turns catalog state into an
+explicit unmapped/checking/available/unavailable result. The dialog and mapping
+controls consume these helpers; group components render filtered options while
+retaining expansion state. See the [O2 walkthrough](optimization-o2-catalog-decisions.md).

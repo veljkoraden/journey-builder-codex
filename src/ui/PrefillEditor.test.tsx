@@ -612,4 +612,18 @@ describe("prefill editor interactions", () => {
       expect(within(group).queryByRole("button", { name: "Email" })).not.toBeInTheDocument();
     }
   });
+  it("restores a collapsed group after search temporarily hides it", async () => {
+    const user = userEvent.setup();
+    render(<PrefillEditor {...setup()} />);
+    await openD(user);
+    const group = await screen.findByRole("group", { name: "Form A" });
+    await user.click(within(group).getByRole("button", { name: "Collapse Form A" }));
+    const search = screen.getByRole("searchbox");
+    await user.type(search, "Form B");
+    expect(screen.queryByRole("group", { name: "Form A" })).not.toBeInTheDocument();
+    await user.clear(search);
+    const restored = screen.getByRole("group", { name: "Form A" });
+    expect(within(restored).getByRole("button", { name: "Expand Form A" })).toBeVisible();
+    expect(within(restored).queryByRole("button", { name: "Email" })).not.toBeInTheDocument();
+  });
 });

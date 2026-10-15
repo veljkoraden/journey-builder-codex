@@ -1,12 +1,7 @@
 import { useEffect, useState } from "react";
 import { loadSourceCatalog } from "./loadSourceCatalog";
-import type { ProviderResult, SourceContext, SourceSelection } from "./model";
+import type { CatalogState, SourceContext, SourceSelection } from "./model";
 import type { SourceRegistry } from "./registry";
-
-type CatalogState =
-  | { status: "idle" | "loading" }
-  | { status: "error"; message: string }
-  | { status: "success"; results: readonly ProviderResult[] };
 
 // Input identity and attempt belong to the result, so stale options disappear before effects run.
 export function useSourceCatalog(

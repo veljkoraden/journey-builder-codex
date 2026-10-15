@@ -1,6 +1,6 @@
 import { useMemo, type MouseEvent } from "react";
 import type { SourceContext, SourceReference, SourceSelection } from "../sources/model";
-import { sourceReferenceKey } from "../sources/model";
+import { getMappingAvailability } from "../mappings/availability";
 import type { SourceRegistry } from "../sources/registry";
 import { useSourceCatalog } from "../sources/useSourceCatalog";
 
@@ -40,37 +40,8 @@ export function MappingControls({
     selectedProviders,
     registry,
   );
-  const options =
-    state.status === "success"
-      ? state.results.flatMap((result) =>
-          result.status === "success"
-            ? result.groups.flatMap((group) =>
-                group.options.map((option) => ({
-                  ...option,
-                  label: `${group.label} · ${option.label}`,
-                })),
-              )
-            : [],
-        )
-      : [];
-  const option =
-    mapping &&
-    options.find(
-      (candidate) => sourceReferenceKey(candidate.reference) === sourceReferenceKey(mapping),
-    );
-  const failed =
-    state.status === "error" ||
-    (state.status === "success" && state.results.some((result) => result.status === "error"));
-  function getUnavailableMessage(): string | null {
-    if (!mapping) return null;
-    if (selections === undefined)
-      return "Source availability unknown: configuration is unavailable.";
-    if (!enabled) return "Source unavailable: provider is disabled.";
-    if (failed) return "Source unavailable: provider could not be loaded.";
-    if (state.status === "success" && !option)
-      return "Source unavailable: this field is no longer offered.";
-    return null;
-  }
+  const availability = getMappingAvailability(mapping, selections, state);
+  const canRetry = availability.status === "unavailable" && availability.reason === "failed";
 
   function clearAndRestoreFocus(event: MouseEvent<HTMLButtonElement>) {
     const trigger = event.currentTarget.previousElementSibling;
@@ -82,9 +53,10 @@ export function MappingControls({
     }
   }
 
-  const unavailableMessage = getUnavailableMessage();
   const buttonLabel = mapping
-    ? (option?.label ?? fallbackLabel ?? `${mapping.resourceId} · ${mapping.fieldPath.join(" → ")}`)
+    ? ((availability.status === "available" ? availability.label : undefined) ??
+      fallbackLabel ??
+      `${mapping.resourceId} · ${mapping.fieldPath.join(" → ")}`)
     : "Choose prefill source";
   return (
     <div className="mapping-controls">
@@ -107,15 +79,15 @@ export function MappingControls({
           Clear
         </button>
       )}
-      {mapping && state.status === "loading" && (
+      {availability.status === "checking" && (
         <span role="status">Checking source availability…</span>
       )}
-      {unavailableMessage && (
+      {availability.status === "unavailable" && (
         <span className="mapping-availability" role="status">
-          {unavailableMessage} The mapping is preserved.
+          {availability.message} The mapping is preserved.
         </span>
       )}
-      {mapping && failed && (
+      {canRetry && (
         <button
           type="button"
           onClick={retry}

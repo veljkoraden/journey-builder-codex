@@ -1,6 +1,13 @@
 import { useEffect, useRef, useState, type KeyboardEvent, type SyntheticEvent } from "react";
 import type { SourceContext, SourceReference, SourceSelection } from "../sources/model";
-import { sourceReferenceKey } from "../sources/model";
+import {
+  filterSourceGroups,
+  findSourceOptionByKey,
+  formatSourceLabel,
+  getSuccessfulGroups,
+  hasSourceOptions,
+  normalizeSourceQuery,
+} from "../sources/catalog";
 import { useSourceCatalog } from "../sources/useSourceCatalog";
 import { SourceGroupChoices } from "./SourceGroupChoices";
 import type { SourceRegistry } from "../sources/registry";
@@ -39,28 +46,13 @@ export function SourceDialog({
 
   useEffect(() => setSelectedSourceKey(null), [context, selections, registry]);
 
-  const groups =
-    state.status === "success"
-      ? state.results.flatMap((result) =>
-          result.status === "success"
-            ? result.groups.map((group) => ({ ...group, providerId: result.providerId }))
-            : [],
-        )
-      : [];
-  const options = groups.flatMap((group) =>
-    group.options.map((option) => ({ option, groupLabel: group.label })),
-  );
-  const selected = options.find(
-    ({ option }) => sourceReferenceKey(option.reference) === selectedSourceKey,
-  );
-
-  const term = query.trim().toLocaleLowerCase();
-  const matches = groups.some(
-    (group) =>
-      group.options.length > 0 &&
-      (group.label.toLocaleLowerCase().includes(term) ||
-        group.options.some((option) => option.label.toLocaleLowerCase().includes(term))),
-  );
+  const groups = state.status === "success" ? getSuccessfulGroups(state.results) : [];
+  // Selection is resolved against the full catalog, independent of the search filter.
+  const selected = findSourceOptionByKey(groups, selectedSourceKey);
+  const visibleGroups = filterSourceGroups(groups, query);
+  const isSearching = normalizeSourceQuery(query).length > 0;
+  const hasSources = hasSourceOptions(groups);
+  const hasMatches = hasSourceOptions(visibleGroups);
   const failures =
     state.status === "success" ? state.results.filter((result) => result.status === "error") : [];
 
@@ -98,7 +90,7 @@ export function SourceDialog({
 
   function confirmSelection() {
     if (selected) {
-      onConfirm(selected.option.reference, `${selected.groupLabel} · ${selected.option.label}`);
+      onConfirm(selected.option.reference, formatSourceLabel(selected));
     }
   }
 
@@ -141,18 +133,16 @@ export function SourceDialog({
           Retry sources
         </button>
       )}
-      {state.status === "success" && options.length === 0 && (
-        <p>No sources available for this field.</p>
-      )}
-      {state.status === "success" && options.length > 0 && !matches && (
+      {state.status === "success" && !hasSources && <p>No sources available for this field.</p>}
+      {state.status === "success" && hasSources && !hasMatches && (
         <p role="status">No sources match your search.</p>
       )}
       <div className="source-groups">
-        {groups.map((group) => (
+        {visibleGroups.map((group) => (
           <SourceGroupChoices
             key={JSON.stringify([group.providerId, group.id])}
             group={group}
-            query={query}
+            isSearching={isSearching}
             draft={selectedSourceKey}
             onChoose={setSelectedSourceKey}
           />
@@ -160,7 +150,7 @@ export function SourceDialog({
       </div>
       <p aria-live="polite">
         {selected
-          ? `Selected: ${selected.groupLabel} · ${selected.option.label}`
+          ? `Selected: ${formatSourceLabel(selected)}`
           : "Choose a source, then select to confirm."}
       </p>
       <div className="dialog-actions">

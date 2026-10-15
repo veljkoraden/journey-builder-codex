@@ -48,3 +48,9 @@ export type ProviderResult =
 export function sourceReferenceKey(reference: SourceReference): string {
   return JSON.stringify([reference.providerId, reference.resourceId, reference.fieldPath]);
 }
+
+export type CatalogState =
+  | { status: "idle" }
+  | { status: "loading" }
+  | { status: "error"; message: string }
+  | { status: "success"; results: readonly ProviderResult[] };

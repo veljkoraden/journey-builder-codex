@@ -129,8 +129,10 @@ merge, deployment, and submission are separate milestones. See the
 
 [Issue #16](https://github.com/veljkoraden/journey-builder-codex/issues/16) tracks
 readability and extensibility improvements. [O1: readability and tooling](docs/optimization-o1-readability.md)
-documents the first increment and its React walkthrough. Shared catalog helpers
-and search decisions are deferred to O2; runtime provider configuration is unchanged.
+documents the first increment and its React walkthrough.
+[O2: shared catalog decisions](docs/optimization-o2-catalog-decisions.md) centralizes
+lookup, labels, search, and mapping availability. O3 will address editor composition
+and context ownership; runtime provider configuration remains unchanged.
 
 Formatting applies to owned source/tests, CSS, browser harness TypeScript, and
 root TypeScript/JavaScript configuration. It excludes Markdown, JSON, generated
