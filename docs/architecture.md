@@ -129,3 +129,10 @@ Mappings, switches, and label snapshots are memory-only. Reload/unmount resets
 them. The mock exposes no save route; incoming nonempty server mapping contracts
 are unverified. Future tenant/version switching needs explicit scope or owner
 reset. See [handoff](handoff.md) for the complete limitations.
+
+## Planned optimization
+
+The [optimization plan](optimization-plan.md) tracks proposed readability and
+composition changes. This guide describes the current implementation. Existing
+source combinations must remain configuration-only, and new providers must remain
+registerable without changes to the dialog, mapping reducer, or graph traversal.

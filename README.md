@@ -120,6 +120,14 @@ CI runs these checks and uploads browser artifacts. Local results, PR checks,
 merge, deployment, and submission are separate milestones. See the
 [handoff and evidence](docs/handoff.md) for current coverage and limitations.
 
+## Planned optimization
+
+[Issue #16](https://github.com/veljkoraden/journey-builder-codex/issues/16) tracks
+readability, shared catalog decisions, editor composition, and extension usability.
+The [optimization plan](docs/optimization-plan.md) defines five small phases and
+test gates. This work is planned, not implemented. Configuration-only source
+combinations and easy provider registration must remain supported throughout.
+
 ## Understand and extend the code
 
 - [Architecture and React walkthrough](docs/architecture.md): file tree, startup,
