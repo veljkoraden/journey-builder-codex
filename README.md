@@ -12,8 +12,9 @@ mock has no save endpoint; this app configures references, not submitted values.
 
 ## Run locally
 
-Use Node **22.12+ within the Node 22 release line** and npm 10. `.nvmrc` pins the
-project's development version; use `nvm use` if you use nvm.
+Use Node **22.18+ within the Node 22 release line** and npm 10. `.nvmrc` pins the
+project's development version; use `nvm use` if you use nvm. Node 22.18 is
+the minimum required by the lint parser; `.nvmrc` remains at 22.22.2.
 
 ```sh
 npm ci
@@ -92,6 +93,8 @@ of installed providers does not. Follow the [tested extension guide](docs/provid
 ## Validate
 
 ```sh
+npm run format:check
+npm run lint
 npm run test:run
 npm run build
 npx playwright install chromium
@@ -109,6 +112,8 @@ On Linux missing browser libraries, use
 | Command | Purpose |
 | --- | --- |
 | `npm run dev` | Start Vite development server |
+| `npm run format` / `npm run format:check` | Format / check owned TypeScript and CSS |
+| `npm run lint` | Check Rules of Hooks and effect dependencies |
 | `npm run typecheck` | Check application and unit/component tests |
 | `npm test` / `npm run test:run` | Watch / run Vitest once |
 | `npm run build` / `npm run preview` | Build / serve `dist` |
@@ -119,6 +124,19 @@ On Linux missing browser libraries, use
 CI runs these checks and uploads browser artifacts. Local results, PR checks,
 merge, deployment, and submission are separate milestones. See the
 [handoff and evidence](docs/handoff.md) for current coverage and limitations.
+
+## Optimization progress
+
+[Issue #16](https://github.com/veljkoraden/journey-builder-codex/issues/16) tracks
+readability and extensibility improvements. [O1: readability and tooling](docs/optimization-o1-readability.md)
+documents the first increment and its React walkthrough. Shared catalog helpers
+and search decisions are deferred to O2; runtime provider configuration is unchanged.
+
+Formatting applies to owned source/tests, CSS, browser harness TypeScript, and
+root TypeScript/JavaScript configuration. It excludes Markdown, JSON, generated
+reports, and the checksummed upstream mock. ESLint uses Babel for syntax parsing;
+`tsc` still owns type checking. The lint rules follow the
+[React Hooks guidance](https://react.dev/reference/eslint-plugin-react-hooks).
 
 ## Understand and extend the code
 

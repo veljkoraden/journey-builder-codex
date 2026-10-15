@@ -1,10 +1,21 @@
-import { useMemo } from "react";
+import { useMemo, type MouseEvent } from "react";
 import type { SourceContext, SourceReference, SourceSelection } from "../sources/model";
 import { sourceReferenceKey } from "../sources/model";
 import type { SourceRegistry } from "../sources/registry";
 import { useSourceCatalog } from "../sources/useSourceCatalog";
 
 const emptySelections: readonly SourceSelection[] = [];
+
+interface MappingControlsProps {
+  editingDisabled?: boolean;
+  context: SourceContext;
+  selections: readonly SourceSelection[] | undefined;
+  registry: SourceRegistry;
+  mapping: SourceReference | undefined;
+  fallbackLabel: string | undefined;
+  onOpen: () => void;
+  onClear: () => void;
+}
 
 export function MappingControls({
   context,
@@ -15,16 +26,7 @@ export function MappingControls({
   onOpen,
   onClear,
   editingDisabled = false,
-}: {
-  editingDisabled?: boolean;
-  context: SourceContext;
-  selections: readonly SourceSelection[] | undefined;
-  registry: SourceRegistry;
-  mapping: SourceReference | undefined;
-  fallbackLabel: string | undefined;
-  onOpen: () => void;
-  onClear: () => void;
-}) {
+}: MappingControlsProps) {
   const selectedProviders = useMemo(
     () =>
       mapping && selections
@@ -59,17 +61,31 @@ export function MappingControls({
   const failed =
     state.status === "error" ||
     (state.status === "success" && state.results.some((result) => result.status === "error"));
-  const unavailable =
-    mapping &&
-    (selections === undefined
-      ? "Source availability unknown: configuration is unavailable."
-      : !enabled
-        ? "Source unavailable: provider is disabled."
-        : failed
-          ? "Source unavailable: provider could not be loaded."
-          : state.status === "success" && !option
-            ? "Source unavailable: this field is no longer offered."
-            : null);
+  function getUnavailableMessage(): string | null {
+    if (!mapping) return null;
+    if (selections === undefined)
+      return "Source availability unknown: configuration is unavailable.";
+    if (!enabled) return "Source unavailable: provider is disabled.";
+    if (failed) return "Source unavailable: provider could not be loaded.";
+    if (state.status === "success" && !option)
+      return "Source unavailable: this field is no longer offered.";
+    return null;
+  }
+
+  function clearAndRestoreFocus(event: MouseEvent<HTMLButtonElement>) {
+    const trigger = event.currentTarget.previousElementSibling;
+    onClear();
+    if (trigger instanceof HTMLButtonElement && !trigger.disabled) {
+      trigger.focus();
+    } else {
+      event.currentTarget.closest<HTMLElement>(".form-detail")?.focus();
+    }
+  }
+
+  const unavailableMessage = getUnavailableMessage();
+  const buttonLabel = mapping
+    ? (option?.label ?? fallbackLabel ?? `${mapping.resourceId} · ${mapping.fieldPath.join(" → ")}`)
+    : "Choose prefill source";
   return (
     <div className="mapping-controls">
       <button
@@ -78,11 +94,7 @@ export function MappingControls({
         aria-label={`${mapping ? "Replace" : "Set"} prefill for ${context.targetField.label}`}
         onClick={onOpen}
       >
-        {mapping
-          ? (option?.label ??
-            fallbackLabel ??
-            `${mapping.resourceId} · ${mapping.fieldPath.join(" → ")}`)
-          : "Choose prefill source"}
+        {buttonLabel}
       </button>
       {mapping && (
         <button
@@ -90,12 +102,7 @@ export function MappingControls({
           className="secondary"
           disabled={editingDisabled}
           aria-label={`Clear prefill for ${context.targetField.label}`}
-          onClick={(event) => {
-            const trigger = event.currentTarget.previousElementSibling;
-            onClear();
-            if (trigger instanceof HTMLButtonElement && !trigger.disabled) trigger.focus();
-            else event.currentTarget.closest<HTMLElement>(".form-detail")?.focus();
-          }}
+          onClick={clearAndRestoreFocus}
         >
           Clear
         </button>
@@ -103,9 +110,9 @@ export function MappingControls({
       {mapping && state.status === "loading" && (
         <span role="status">Checking source availability…</span>
       )}
-      {unavailable && (
+      {unavailableMessage && (
         <span className="mapping-availability" role="status">
-          {unavailable} The mapping is preserved.
+          {unavailableMessage} The mapping is preserved.
         </span>
       )}
       {mapping && failed && (

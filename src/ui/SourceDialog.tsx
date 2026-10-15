@@ -1,9 +1,17 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type KeyboardEvent, type SyntheticEvent } from "react";
 import type { SourceContext, SourceReference, SourceSelection } from "../sources/model";
 import { sourceReferenceKey } from "../sources/model";
 import { useSourceCatalog } from "../sources/useSourceCatalog";
 import { SourceGroupChoices } from "./SourceGroupChoices";
 import type { SourceRegistry } from "../sources/registry";
+
+interface SourceDialogProps {
+  context: SourceContext;
+  selections: readonly SourceSelection[];
+  registry: SourceRegistry;
+  onClose: () => void;
+  onConfirm: (source: SourceReference, label: string) => void;
+}
 
 export function SourceDialog({
   context,
@@ -11,16 +19,10 @@ export function SourceDialog({
   registry,
   onClose,
   onConfirm,
-}: {
-  context: SourceContext;
-  selections: readonly SourceSelection[];
-  registry: SourceRegistry;
-  onClose: () => void;
-  onConfirm: (source: SourceReference, label: string) => void;
-}) {
+}: SourceDialogProps) {
   const dialog = useRef<HTMLDialogElement>(null);
   const cancel = useRef<HTMLButtonElement>(null);
-  const [draft, setDraft] = useState<string | null>(null);
+  const [selectedSourceKey, setSelectedSourceKey] = useState<string | null>(null);
   const [query, setQuery] = useState("");
   const { state, retry } = useSourceCatalog(context, selections, registry);
 
@@ -35,7 +37,7 @@ export function SourceDialog({
     };
   }, []);
 
-  useEffect(() => setDraft(null), [context, selections, registry]);
+  useEffect(() => setSelectedSourceKey(null), [context, selections, registry]);
 
   const groups =
     state.status === "success"
@@ -48,7 +50,9 @@ export function SourceDialog({
   const options = groups.flatMap((group) =>
     group.options.map((option) => ({ option, groupLabel: group.label })),
   );
-  const selected = options.find(({ option }) => sourceReferenceKey(option.reference) === draft);
+  const selected = options.find(
+    ({ option }) => sourceReferenceKey(option.reference) === selectedSourceKey,
+  );
 
   const term = query.trim().toLocaleLowerCase();
   const matches = groups.some(
@@ -60,36 +64,51 @@ export function SourceDialog({
   const failures =
     state.status === "success" ? state.results.filter((result) => result.status === "error") : [];
 
+  function cancelSelection(event: SyntheticEvent<HTMLDialogElement>) {
+    event.preventDefault();
+    onClose();
+  }
+
+  function handleDialogKeyDown(event: KeyboardEvent<HTMLDialogElement>) {
+    if (event.key === "Escape") {
+      event.preventDefault();
+      onClose();
+    }
+    if (event.key !== "Tab") return;
+    const focusableElements = [
+      ...dialog.current!.querySelectorAll<HTMLElement>(
+        "button:not(:disabled), input:not(:disabled)",
+      ),
+    ].filter((element) => !element.closest("[hidden]"));
+    const first = focusableElements[0];
+    const last = focusableElements[focusableElements.length - 1];
+    if (event.shiftKey && document.activeElement === first) {
+      event.preventDefault();
+      last?.focus();
+    } else if (!event.shiftKey && document.activeElement === last) {
+      event.preventDefault();
+      first?.focus();
+    }
+  }
+
+  function retrySources() {
+    setSelectedSourceKey(null);
+    retry();
+  }
+
+  function confirmSelection() {
+    if (selected) {
+      onConfirm(selected.option.reference, `${selected.groupLabel} · ${selected.option.label}`);
+    }
+  }
+
   return (
     <dialog
       ref={dialog}
       className="source-dialog"
       aria-labelledby="source-dialog-title"
-      onCancel={(event) => {
-        event.preventDefault();
-        onClose();
-      }}
-      onKeyDown={(event) => {
-        if (event.key === "Escape") {
-          event.preventDefault();
-          onClose();
-        }
-        if (event.key !== "Tab") return;
-        const buttons = [
-          ...dialog.current!.querySelectorAll<HTMLElement>(
-            "button:not(:disabled), input:not(:disabled)",
-          ),
-        ].filter((element) => !element.closest("[hidden]"));
-        const first = buttons[0];
-        const last = buttons[buttons.length - 1];
-        if (event.shiftKey && document.activeElement === first) {
-          event.preventDefault();
-          last?.focus();
-        } else if (!event.shiftKey && document.activeElement === last) {
-          event.preventDefault();
-          first?.focus();
-        }
-      }}
+      onCancel={cancelSelection}
+      onKeyDown={handleDialogKeyDown}
     >
       <h2 id="source-dialog-title">
         Select data for {context.targetForm.name} · {context.targetField.label}
@@ -118,13 +137,7 @@ export function SourceDialog({
         </div>
       )}
       {(state.status === "error" || failures.length > 0) && (
-        <button
-          type="button"
-          onClick={() => {
-            setDraft(null);
-            retry();
-          }}
-        >
+        <button type="button" onClick={retrySources}>
           Retry sources
         </button>
       )}
@@ -140,8 +153,8 @@ export function SourceDialog({
             key={JSON.stringify([group.providerId, group.id])}
             group={group}
             query={query}
-            draft={draft}
-            onChoose={setDraft}
+            draft={selectedSourceKey}
+            onChoose={setSelectedSourceKey}
           />
         ))}
       </div>
@@ -154,17 +167,7 @@ export function SourceDialog({
         <button type="button" ref={cancel} className="secondary" onClick={onClose}>
           Cancel
         </button>
-        <button
-          type="button"
-          disabled={!selected}
-          onClick={() => {
-            if (selected)
-              onConfirm(
-                selected.option.reference,
-                `${selected.groupLabel} · ${selected.option.label}`,
-              );
-          }}
-        >
+        <button type="button" disabled={!selected} onClick={confirmSelection}>
           Select
         </button>
       </div>

@@ -3,7 +3,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import type { Blueprint, FormField, FormInstance } from "../blueprint/model";
 import type { DependencyGraph } from "../dependencies/createDependencyGraph";
 import { sourceReferenceKey } from "../sources/model";
-import type { SourceSelection } from "../sources/model";
+import type { SourceReference, SourceSelection } from "../sources/model";
 import { sourceRegistry } from "../sources/registry";
 import type { SourceRegistry } from "../sources/registry";
 import { getMapping } from "../mappings/reducer";
@@ -20,29 +20,34 @@ type ActiveTarget = {
   selections: readonly SourceSelection[];
 };
 
+interface PrefillEditorProps {
+  blueprint: Blueprint;
+  dependencies: DependencyGraph;
+  selections: readonly SourceSelection[] | undefined;
+  registry?: SourceRegistry;
+}
+
 export function PrefillEditor({
   blueprint,
   dependencies,
   selections,
   registry = sourceRegistry,
-}: {
-  blueprint: Blueprint;
-  dependencies: DependencyGraph;
-  selections: readonly SourceSelection[] | undefined;
-  registry?: SourceRegistry;
-}) {
+}: PrefillEditorProps) {
   const { state, setMapping, clearMapping } = usePrefillMappings();
   const [disabledForms, setDisabledForms] = useState<ReadonlySet<string>>(new Set());
   const counts = useMemo(() => summarizeMappings(blueprint, state), [blueprint, state]);
   const formKey = (nodeId: string) => JSON.stringify([blueprint.id, nodeId]);
-  const [labels, setLabels] = useState<Readonly<Record<string, string>>>({});
-  const [active, setActive] = useState<ActiveTarget | null>(null);
-  const close = useCallback(() => setActive(null), []);
+  const [sourceLabels, setSourceLabels] = useState<Readonly<Record<string, string>>>({});
+  const [activeTarget, setActiveTarget] = useState<ActiveTarget | null>(null);
+  const closeDialog = useCallback(() => setActiveTarget(null), []);
   // A replaced graph/configuration must not keep an old target or draft alive.
   useEffect(() => {
-    if (active && (active.blueprint !== blueprint || active.selections !== selections))
-      setActive(null);
-  }, [active, blueprint, selections]);
+    if (
+      activeTarget &&
+      (activeTarget.blueprint !== blueprint || activeTarget.selections !== selections)
+    )
+      setActiveTarget(null);
+  }, [activeTarget, blueprint, selections]);
   const contexts = useMemo(
     () =>
       new Map(
@@ -58,18 +63,48 @@ export function PrefillEditor({
       ),
     [blueprint, dependencies],
   );
-  const current =
-    active?.blueprint === blueprint &&
-    active.selections === selections &&
-    !disabledForms.has(formKey(active.form.nodeId))
-      ? active
+  const currentTarget =
+    activeTarget?.blueprint === blueprint &&
+    activeTarget.selections === selections &&
+    !disabledForms.has(formKey(activeTarget.form.nodeId))
+      ? activeTarget
       : null;
+  function setFormEditing(nodeId: string, enabled: boolean) {
+    closeDialog();
+    setDisabledForms((previous) => {
+      const next = new Set(previous);
+      if (enabled) next.delete(formKey(nodeId));
+      else next.add(formKey(nodeId));
+      return next;
+    });
+  }
+
+  function openField(form: FormInstance, field: FormField) {
+    if (!selections || disabledForms.has(formKey(form.nodeId))) return;
+    setActiveTarget({ blueprint, form, field, selections });
+  }
+
+  function confirmSource(source: SourceReference, label: string) {
+    if (!currentTarget) return;
+    setSourceLabels((previous) => ({ ...previous, [sourceReferenceKey(source)]: label }));
+    // The dialog only confirms references still present in its successful catalog.
+    setMapping(
+      {
+        blueprintId: blueprint.id,
+        nodeId: currentTarget.form.nodeId,
+        fieldKey: currentTarget.field.key,
+      },
+      source,
+    );
+    closeDialog();
+  }
+
   return (
     <>
       <FormBrowser
         counts={counts}
         blueprint={blueprint}
-        onSelect={close}
+        onSelect={closeDialog}
         renderFields={(form) => (
           <FormFields
             form={form}
@@ -85,16 +120,7 @@ export function PrefillEditor({
                     role="switch"
                     aria-label={`Enable prefill for ${form.name}`}
                     checked={!disabledForms.has(formKey(form.nodeId))}
-                    onChange={(event) => {
-                      const enabled = event.target.checked;
-                      close();
-                      setDisabledForms((previous) => {
-                        const next = new Set(previous);
-                        if (enabled) next.delete(formKey(form.nodeId));
-                        else next.add(formKey(form.nodeId));
-                        return next;
-                      });
-                    }}
+                    onChange={(event) => setFormEditing(form.nodeId, event.target.checked)}
                   />
                   Prefill {disabledForms.has(formKey(form.nodeId)) ? "off" : "on"}
                 </label>
@@ -112,7 +138,7 @@ export function PrefillEditor({
               const mapping = getMapping(state, target);
               const label =
                 mapping &&
-                (labels[sourceReferenceKey(mapping)] ??
+                (sourceLabels[sourceReferenceKey(mapping)] ??
                   `${mapping.resourceId} · ${mapping.fieldPath.join(" → ")}`);
               return (
                 <MappingControls
@@ -122,10 +148,7 @@ export function PrefillEditor({
                   editingDisabled={disabledForms.has(formKey(form.nodeId))}
                   mapping={mapping}
                   fallbackLabel={label || undefined}
-                  onOpen={() => {
-                    if (selections && !disabledForms.has(formKey(form.nodeId)))
-                      setActive({ blueprint, form, field, selections });
-                  }}
+                  onOpen={() => openField(form, field)}
                   onClear={() => clearMapping(target)}
                 />
               );
@@ -133,25 +156,13 @@ export function PrefillEditor({
           />
         )}
       />
-      {current && (
+      {currentTarget && (
         <SourceDialog
-          context={contexts.get(current.form.nodeId)!.get(current.field.key)!}
-          selections={current.selections}
+          context={contexts.get(currentTarget.form.nodeId)!.get(currentTarget.field.key)!}
+          selections={currentTarget.selections}
           registry={registry}
-          onClose={close}
-          onConfirm={(source, label) => {
-            setLabels((previous) => ({ ...previous, [sourceReferenceKey(source)]: label }));
-            // Dialog confirms only references still present in its current successful catalog.
-            setMapping(
-              {
-                blueprintId: blueprint.id,
-                nodeId: current.form.nodeId,
-                fieldKey: current.field.key,
-              },
-              source,
-            );
-            close();
-          }}
+          onClose={closeDialog}
+          onConfirm={confirmSource}
         />
       )}
     </>
