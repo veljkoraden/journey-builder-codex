@@ -689,3 +689,51 @@ describe("selected-form context ownership", () => {
     expect(screen.getByText("1 of 2 fields mapped")).toBeVisible();
   });
 });
+
+it("measures target-specific requests and preserves independent fallback labels for a shared source", async () => {
+  const user = userEvent.setup();
+  const props = setup();
+  const getGroups = vi.fn<SourceProvider["getGroups"]>().mockImplementation(async (context) => [
+    {
+      ...customGroup,
+      options: [{ ...customGroup.options[0]!, label: `${context.targetField.label} source` }],
+    },
+  ]);
+  const registry = createSourceRegistry([{ id: "extra", getGroups }]);
+  const selections = [{ id: "extra" }];
+  const view = render(<PrefillEditor {...props} selections={selections} registry={registry} />);
+  expect(getGroups).not.toHaveBeenCalled();
+  await openD(user);
+  await choose(user, "Extra source", "Email source");
+  await user.click(screen.getByRole("button", { name: "Select" }));
+  await waitFor(() => expect(getGroups).toHaveBeenCalledTimes(2));
+  await user.click(screen.getByRole("button", { name: "Set prefill for Name" }));
+  await choose(user, "Extra source", "Name source");
+  await user.click(screen.getByRole("button", { name: "Select" }));
+  await waitFor(() => expect(getGroups).toHaveBeenCalledTimes(4));
+  expect(getGroups.mock.calls.map(([context]) => context.targetField.key)).toEqual([
+    "email",
+    "email",
+    "name",
+    "name",
+  ]);
+  view.rerender(<PrefillEditor {...props} selections={selections} registry={registry} />);
+  expect(getGroups).toHaveBeenCalledTimes(4);
+  await user.click(screen.getByRole("button", { name: "Form E" }));
+  expect(getGroups).toHaveBeenCalledTimes(4);
+  await user.click(screen.getByRole("button", { name: "Form D" }));
+  await waitFor(() => expect(getGroups).toHaveBeenCalledTimes(6));
+  view.rerender(<PrefillEditor {...props} selections={[]} registry={registry} />);
+  expect(getGroups).toHaveBeenCalledTimes(6);
+  expect(screen.getByRole("button", { name: "Replace prefill for Email" })).toHaveTextContent(
+    "Extra source · Email source",
+  );
+  expect(screen.getByRole("button", { name: "Replace prefill for Name" })).toHaveTextContent(
+    "Extra source · Name source",
+  );
+  await user.click(screen.getByRole("button", { name: "Clear prefill for Name" }));
+  expect(screen.getByRole("button", { name: "Replace prefill for Email" })).toHaveTextContent(
+    "Extra source · Email source",
+  );
+  expect(screen.getByText("1 of 2 fields mapped")).toBeVisible();
+});

@@ -2,9 +2,9 @@ import { useMemo, useRef, type RefObject } from "react";
 import type { Blueprint, FormField, FormInstance } from "../blueprint/model";
 import type { DependencyGraph } from "../dependencies/createDependencyGraph";
 import type { MappingState, MappingTarget } from "../mappings/model";
-import { getMapping } from "../mappings/reducer";
+import { getSavedMapping } from "../mappings/reducer";
 import type { MappingCount } from "../mappings/summarizeMappings";
-import { sourceReferenceKey, type SourceSelection } from "../sources/model";
+import type { SourceSelection } from "../sources/model";
 import type { SourceRegistry } from "../sources/registry";
 import { FormFields } from "./FormFields";
 import { MappingControls } from "./MappingControls";
@@ -16,7 +16,6 @@ interface PrefillFormProps {
   form: FormInstance;
   count: MappingCount;
   mappingState: MappingState;
-  sourceLabels: Readonly<Record<string, string>>;
   selections: readonly SourceSelection[] | undefined;
   registry: SourceRegistry;
   editingEnabled: boolean;
@@ -53,7 +52,6 @@ function PrefillFieldControls({
   form,
   field,
   mappingState,
-  sourceLabels,
   selections,
   registry,
   editingEnabled,
@@ -69,14 +67,14 @@ function PrefillFieldControls({
     [blueprint, dependencies, form, field],
   );
   const target = { blueprintId: blueprint.id, nodeId: form.nodeId, fieldKey: field.key };
-  const mapping = getMapping(mappingState, target);
+  const saved = getSavedMapping(mappingState, target);
   return (
     <MappingControls
       context={context}
       selections={selections}
       registry={registry}
-      mapping={mapping}
-      fallbackLabel={mapping ? sourceLabels[sourceReferenceKey(mapping)] : undefined}
+      mapping={saved?.source}
+      fallbackLabel={saved?.fallbackLabel}
       editingDisabled={!editingEnabled}
       fallbackFocusRef={regionRef}
       onOpen={() => onOpen(field)}

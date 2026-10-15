@@ -134,7 +134,9 @@ documents the first increment and its React walkthrough.
 lookup, labels, search, and mapping availability.
 [O3: editor composition](docs/optimization-o3-editor-composition.md) separates selected-form
 presentation and creates stable contexts near their consumers. Runtime provider
-configuration remains unchanged; O4 will evaluate mapping state and request simplification.
+configuration remains unchanged. [O4: mapping state and request evaluation](docs/optimization-o4-state-and-requests.md)
+stores fallback labels with mappings and documents why caching and a generic async
+hook are deferred. O5 will verify and simplify the provider-extension walkthrough.
 
 Formatting applies to owned source/tests, CSS, browser harness TypeScript, and
 root TypeScript/JavaScript configuration. It excludes Markdown, JSON, generated

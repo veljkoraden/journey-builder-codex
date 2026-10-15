@@ -2,7 +2,6 @@ import { summarizeMappings } from "../mappings/summarizeMappings";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import type { Blueprint, FormField, FormInstance } from "../blueprint/model";
 import type { DependencyGraph } from "../dependencies/createDependencyGraph";
-import { sourceReferenceKey } from "../sources/model";
 import type { SourceReference, SourceSelection } from "../sources/model";
 import { sourceRegistry } from "../sources/registry";
 import type { SourceRegistry } from "../sources/registry";
@@ -35,7 +34,6 @@ export function PrefillEditor({
   const [disabledForms, setDisabledForms] = useState<ReadonlySet<string>>(new Set());
   const counts = useMemo(() => summarizeMappings(blueprint, state), [blueprint, state]);
   const formKey = (nodeId: string) => JSON.stringify([blueprint.id, nodeId]);
-  const [sourceLabels, setSourceLabels] = useState<Readonly<Record<string, string>>>({});
   const [activeTarget, setActiveTarget] = useState<ActiveTarget | null>(null);
   const closeDialog = useCallback(() => setActiveTarget(null), []);
   // A replaced graph/configuration must not keep an old target or draft alive.
@@ -81,7 +79,6 @@ export function PrefillEditor({
 
   function confirmSource(source: SourceReference, label: string) {
     if (!currentTarget) return;
-    setSourceLabels((previous) => ({ ...previous, [sourceReferenceKey(source)]: label }));
     // The dialog only confirms references still present in its successful catalog.
     setMapping(
       {
@@ -90,6 +87,7 @@ export function PrefillEditor({
         fieldKey: currentTarget.field.key,
       },
       source,
+      label,
     );
     closeDialog();
   }
@@ -107,7 +105,6 @@ export function PrefillEditor({
             form={form}
             count={counts.get(form.nodeId)!}
             mappingState={state}
-            sourceLabels={sourceLabels}
             selections={selections}
             registry={registry}
             editingEnabled={!disabledForms.has(formKey(form.nodeId))}

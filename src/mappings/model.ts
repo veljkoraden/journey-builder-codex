@@ -7,9 +7,20 @@ export interface MappingTarget {
   readonly fieldKey: string;
 }
 
-export type MappingState = Readonly<Record<string, SourceReference>>;
+export interface SavedMapping {
+  readonly source: SourceReference;
+  // A target-local snapshot used only when the current catalog cannot supply a label.
+  readonly fallbackLabel?: string | undefined;
+}
+
+export type MappingState = Readonly<Record<string, SavedMapping>>;
 export type MappingAction =
-  | { readonly type: "set"; readonly target: MappingTarget; readonly source: SourceReference }
+  | {
+      readonly type: "set";
+      readonly target: MappingTarget;
+      readonly source: SourceReference;
+      readonly fallbackLabel?: string | undefined;
+    }
   | { readonly type: "clear"; readonly target: MappingTarget };
 
 // JSON tuple encoding prevents delimiter, dotted-key, and prototype-key collisions.

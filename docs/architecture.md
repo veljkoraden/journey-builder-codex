@@ -148,3 +148,18 @@ open dialog has its own memoized context. No all-form context map is allocated.
 Explicit button and form-region refs restore focus after clearing a mapping.
 See [O3's React walkthrough](optimization-o3-editor-composition.md) for render flow
 and the distinction between durable state, props, memoized inputs, and refs.
+
+## Saved mapping state and request decisions (O4)
+
+The mapping reducer stores a `SavedMapping` per target: a source reference and an
+optional fallback label captured on confirmation. Clearing removes both. Labels
+are scoped to targets, so two fields sharing a source cannot overwrite each other's
+snapshots. `getSavedMapping` supplies the UI; `getMapping` supplies reference-only
+consumers. Live catalog labels take precedence, and label-only edits retain the
+source object's identity. There is no separate editor label dictionary.
+
+[O4's measurement and React walkthrough](optimization-o4-state-and-requests.md)
+records six provider calls across two field assignments and a navigation round
+trip, with none from an unchanged parent render. Target-specific catalogs prevent
+safe sharing by form alone. Individual requests and explicit domain loading hooks
+remain; no cache or generic async hook is introduced.

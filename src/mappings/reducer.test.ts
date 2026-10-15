@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import type { SourceReference } from "../sources/model";
 import type { MappingState, MappingTarget } from "./model";
 import { mappingTargetKey } from "./model";
-import { createMappingState, getMapping, mappingReducer } from "./reducer";
+import { createMappingState, getMapping, getSavedMapping, mappingReducer } from "./reducer";
 
 const target: MappingTarget = { blueprintId: "blueprint", nodeId: "D", fieldKey: "email" };
 const source: SourceReference = {
@@ -164,5 +164,62 @@ describe("mapping state", () => {
       targets.forEach((entry, i) => expect(getMapping(state, entry)).toEqual(expected[i]));
       expect(JSON.stringify(previous)).toBe(snapshot);
     }
+  });
+});
+
+describe("mapping label snapshots", () => {
+  it("saves source and label atomically and clears both", () => {
+    const state = mappingReducer(createMappingState(), {
+      type: "set",
+      target,
+      source,
+      fallbackLabel: "Form A · Email",
+    });
+    expect(getSavedMapping(state, target)).toEqual({ source, fallbackLabel: "Form A · Email" });
+    expect(Object.isFrozen(getSavedMapping(state, target))).toBe(true);
+    expect(
+      getSavedMapping(mappingReducer(state, { type: "clear", target }), target),
+    ).toBeUndefined();
+  });
+  it("updates a label without changing source identity and skips identical confirmations", () => {
+    const action = { type: "set" as const, target, source, fallbackLabel: "Old label" };
+    const state = mappingReducer(createMappingState(), action);
+    expect(mappingReducer(state, { ...action, source: { ...source } })).toBe(state);
+    const updated = mappingReducer(state, { ...action, fallbackLabel: "New label" });
+    expect(getSavedMapping(updated, target)?.fallbackLabel).toBe("New label");
+    expect(getMapping(updated, target)).toBe(getMapping(state, target));
+    expect(getSavedMapping(state, target)?.fallbackLabel).toBe("Old label");
+  });
+  it("keeps labels isolated for targets sharing one source", () => {
+    const other = { ...target, fieldKey: "name" };
+    const first = mappingReducer(createMappingState(), {
+      type: "set",
+      target,
+      source,
+      fallbackLabel: "Email label",
+    });
+    const both = mappingReducer(first, {
+      type: "set",
+      target: other,
+      source,
+      fallbackLabel: "Name label",
+    });
+    expect(getSavedMapping(both, target)?.fallbackLabel).toBe("Email label");
+    expect(getSavedMapping(both, other)?.fallbackLabel).toBe("Name label");
+    const cleared = mappingReducer(both, { type: "clear", target: other });
+    expect(getSavedMapping(cleared, target)).toBe(getSavedMapping(both, target));
+  });
+  it("does not retain a previous label when replacing with an unlabeled source", () => {
+    const state = mappingReducer(createMappingState(), {
+      type: "set",
+      target,
+      source,
+      fallbackLabel: "Old label",
+    });
+    const replaced = mappingReducer(state, { type: "set", target, source: replacement });
+    expect(getSavedMapping(replaced, target)).toEqual({
+      source: replacement,
+      fallbackLabel: undefined,
+    });
   });
 });
