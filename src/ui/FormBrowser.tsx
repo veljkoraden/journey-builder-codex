@@ -4,6 +4,8 @@ import type { Blueprint } from "../blueprint/model";
 import { FormList } from "./FormList";
 import { FormFields } from "./FormFields";
 
+const formNameOrder = new Intl.Collator("en", { sensitivity: "base" });
+
 export function FormBrowser({ blueprint, renderFields, onSelect, counts }: {
   blueprint: Blueprint;
   counts?: ReadonlyMap<string, MappingCount>;
@@ -11,7 +13,8 @@ export function FormBrowser({ blueprint, renderFields, onSelect, counts }: {
   onSelect?: () => void;
 }) {
   const [selectedId, setSelectedId] = useState<string | null>(null);
-  const selected = blueprint.forms.find((form) => form.nodeId === selectedId) ?? blueprint.forms[0];
+  const forms = [...blueprint.forms].sort((a, b) => formNameOrder.compare(a.name, b.name));
+  const selected = forms.find((form) => form.nodeId === selectedId) ?? forms[0];
 
   if (!selected) {
     return <p role="status">This blueprint has no forms.</p>;
@@ -20,7 +23,7 @@ export function FormBrowser({ blueprint, renderFields, onSelect, counts }: {
     <>
       <p className="blueprint-name">{blueprint.name}</p>
       <div className="form-browser">
-        <FormList counts={counts} forms={blueprint.forms} selectedId={selected.nodeId} onSelect={(id) => { onSelect?.(); setSelectedId(id); }} />
+        <FormList counts={counts} forms={forms} selectedId={selected.nodeId} onSelect={(id) => { onSelect?.(); setSelectedId(id); }} />
         {renderFields ? renderFields(selected) : <FormFields form={selected} />}
       </div>
     </>

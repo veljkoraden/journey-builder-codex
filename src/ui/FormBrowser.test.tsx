@@ -21,6 +21,33 @@ describe("form browser", () => {
     expect(within(detail).queryByText("Submit")).not.toBeInTheDocument();
   });
 
+  it("sorts names alphabetically without case sensitivity or mutating API order", () => {
+    const data = blueprint();
+    const names = ["zebra", "Beta", "alpha"];
+    const forms = Object.freeze(data.forms.map((form, index) => ({ ...form, name: names[index]! })));
+    render(<FormBrowser blueprint={{ ...data, forms }} />);
+    const buttons = within(screen.getByRole("navigation", { name: "Forms" })).getAllByRole("button");
+    expect(buttons.map((button) => button.getAttribute("aria-label"))).toEqual(["alpha", "Beta", "zebra"]);
+    expect(buttons[0]).toHaveAttribute("aria-pressed", "true");
+    expect(screen.getByRole("region", { name: "alpha fields" })).toHaveTextContent("Age");
+    expect(forms.map((form) => form.name)).toEqual(names);
+  });
+
+  it("preserves selected node and its mapped count when a rename changes list order", async () => {
+    const user = userEvent.setup();
+    const data = blueprint();
+    const counts = new Map([["node-b", { mapped: 1, total: 3 }]]);
+    const { rerender } = render(<FormBrowser blueprint={data} counts={counts} />);
+    await user.click(screen.getByRole("button", { name: "Form B" }));
+    const forms = data.forms.map((form) => form.nodeId === "node-b" ? { ...form, name: "AAA renamed" } : form);
+    rerender(<FormBrowser blueprint={{ ...data, forms }} counts={counts} />);
+    const selected = screen.getByRole("button", { name: "AAA renamed" });
+    expect(screen.getAllByRole("button")[0]).toBe(selected);
+    expect(selected).toHaveAttribute("aria-pressed", "true");
+    expect(selected).toHaveAccessibleDescription("1 of 3 mapped");
+    expect(screen.getByRole("region", { name: "AAA renamed fields" })).toHaveTextContent("Email address");
+  });
+
   it("selects a separate node sharing the same form definition", async () => {
     const user = userEvent.setup();
     render(<FormBrowser blueprint={blueprint()} />);
