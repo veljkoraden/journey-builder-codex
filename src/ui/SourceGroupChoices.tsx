@@ -13,9 +13,11 @@ export function SourceGroupChoices({ group, query, draft, onChoose }: {
   if (options.length === 0) return null;
   // Search exposes matching options; clearing search restores the user's expansion choice.
   const open = term.length > 0 || expanded;
-  return <fieldset>
-    <legend>{group.label}</legend>
-    {group.description && <p className="source-kind">{group.description}</p>}
+  return <fieldset aria-labelledby={`${contentId}-label`} aria-describedby={group.description ? `${contentId}-description` : undefined}>
+    <legend>
+      <span id={`${contentId}-label`}>{group.label}</span>
+      {group.description && <> <span id={`${contentId}-description`} className="source-kind">{group.description}</span></>}
+    </legend>
     <button type="button" className="group-toggle" aria-expanded={open} aria-controls={contentId}
       disabled={term.length > 0} onClick={() => setExpanded((value) => !value)}>
       {term ? "Search matches" : `${open ? "Collapse" : "Expand"} ${group.label}`}

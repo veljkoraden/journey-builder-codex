@@ -76,7 +76,8 @@ button:disabled { opacity: 0.55; cursor: not-allowed; }
 .mapping-controls > button:first-child { flex: 1 1 220px; }
 .mapping-controls button, .dialog-actions button, .source-groups button { min-height: 44px; }
 .field-list li { padding: 20px 0; }
-.source-kind { margin: 4px 8px; color: #536078; font-size: 0.85rem; }
+.source-kind { display: inline-block; margin-left: 6px; padding: 2px 7px; border-radius: 12px; background: #efedff; color: #302881; font-size: 0.75rem; font-weight: 500; }
+.source-groups legend { max-width: 100%; overflow-wrap: anywhere; }
 .source-dialog h2, .source-dialog p, .source-dialog li { overflow-wrap: anywhere; }
 .source-groups .group-toggle:disabled { opacity: 1; color: #536078; border-color: #dfe3eb; }
 @media (max-width: 640px) {
