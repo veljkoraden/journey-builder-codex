@@ -1,5 +1,28 @@
 # Architecture and React walkthrough
 
+## Read these files first
+
+Follow one user action before reading every helper:
+
+1. [main.tsx](../src/main.tsx) and [App.tsx](../src/app/App.tsx): where React mounts
+   and how graph loading and source configuration are composed.
+2. [PrefillEditor.tsx](../src/ui/PrefillEditor.tsx): state that survives navigation,
+   opening a field, confirming a source, and clearing a mapping.
+3. [PrefillForm.tsx](../src/ui/PrefillForm.tsx) and
+   [FormFields.tsx](../src/ui/FormFields.tsx): props, header/control slots, and field contexts.
+4. [SourceDialog.tsx](../src/ui/SourceDialog.tsx): temporary search/selection state;
+   follow its catalog hook into [loadSourceCatalog.ts](../src/sources/loadSourceCatalog.ts).
+5. [sources/model.ts](../src/sources/model.ts), [registry.ts](../src/sources/registry.ts),
+   and [teamDirectory.ts](../src/sources/examples/teamDirectory.ts): the extension contract,
+   installation point, and small working provider.
+6. [mappings/reducer.ts](../src/mappings/reducer.ts): how confirmation saves a
+   reference and fallback label together without mutating earlier state.
+
+Then use [the extension walkthrough](provider-extension.md) to add a provider.
+For API/graph details, follow `BlueprintConnection` into `loadBlueprint` and
+`createDependencyGraph`. Colocated tests demonstrate edge cases; historical phase
+records explain decisions, while this guide and the README describe current usage.
+
 ## Files by responsibility
 
 ```text
@@ -33,7 +56,9 @@ index.html → main.tsx → App
       → PrefillEditor
           ├── usePrefillMappings → mappingReducer
           ├── summarizeMappings → per-form counts
-          ├── FormBrowser → FormList + FormFields → MappingControls
+          ├── FormBrowser → FormList + PrefillForm → FormFields
+          │       ├── PrefillSettings
+          │       └── MappingControls
           └── SourceDialog → useSourceCatalog → loadSourceCatalog → providers
                   └── SourceGroupChoices
 ```

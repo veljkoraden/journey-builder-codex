@@ -1,4 +1,4 @@
-import { render, screen, within } from "@testing-library/react";
+import { render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it } from "vitest";
 import { dependencyFixture } from "../../test/dependencyFixture";
@@ -182,5 +182,46 @@ it("maps and clears the real extension through the unchanged editor", async () =
     "Onboarding team · Manager email",
   );
   await user.click(screen.getByRole("button", { name: "Clear prefill for Email" }));
+  expect(screen.getByRole("button", { name: "Set prefill for Email" })).toHaveFocus();
+});
+
+it("refreshes extension settings while preserving saved mappings and their identities", async () => {
+  const data = context();
+  const user = userEvent.setup();
+  const editor = (enabled: boolean, teamId = settings.teamId, teamLabel = settings.teamLabel) => (
+    <PrefillEditor
+      blueprint={data.blueprint}
+      dependencies={data.dependencies}
+      registry={registry}
+      selections={parseSourceConfiguration(
+        { providers: [{ id: "team-directory", enabled, settings: { teamId, teamLabel } }] },
+        registry,
+      )}
+    />
+  );
+  const view = render(editor(true));
+  await user.click(screen.getByRole("button", { name: "Set prefill for Email" }));
+  const group = await screen.findByRole("group", { name: "Onboarding team" });
+  await user.click(within(group).getByRole("button", { name: "Manager email" }));
+  await user.click(screen.getByRole("button", { name: "Select" }));
+  view.rerender(editor(true, "onboarding", "Renamed team"));
+  await waitFor(() =>
+    expect(screen.getByRole("button", { name: "Replace prefill for Email" })).toHaveTextContent(
+      "Renamed team · Manager email",
+    ),
+  );
+  view.rerender(editor(false));
+  expect(screen.getByText(/provider is disabled/)).toBeVisible();
+  expect(screen.getByRole("button", { name: "Replace prefill for Email" })).toHaveTextContent(
+    "Onboarding team · Manager email",
+  );
+  view.rerender(editor(true));
+  await waitFor(() => expect(screen.queryByText(/provider is disabled/)).not.toBeInTheDocument());
+  expect(screen.getByText("1 of 1 fields mapped")).toBeVisible();
+  view.rerender(editor(true, "another-team"));
+  expect(await screen.findByText(/no longer offered/)).toBeVisible();
+  expect(screen.getByText("1 of 1 fields mapped")).toBeVisible();
+  await user.click(screen.getByRole("button", { name: "Clear prefill for Email" }));
+  expect(screen.getByText("0 of 1 fields mapped")).toBeVisible();
   expect(screen.getByRole("button", { name: "Set prefill for Email" })).toHaveFocus();
 });
