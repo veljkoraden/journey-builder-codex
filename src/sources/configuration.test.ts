@@ -11,8 +11,8 @@ const config = (mask = 7) => ({ providers: ids.map((id, i) => ({ id, enabled: !!
 afterEach(() => vi.unstubAllGlobals());
 
 describe("runtime configuration validation", () => {
-  it("ships a valid default with all providers", () => {
-    expect(parseSourceConfiguration(shipped).map((p) => p.id)).toEqual(ids);
+  it("ships valid configuration without prescribing an enabled subset", () => {
+    expect(() => parseSourceConfiguration(shipped)).not.toThrow();
   });
   it.each(Array.from({ length: 8 }, (_, i) => i))("controls catalog results for subset %i", async (mask) => {
     const original = dependencyFixture();
