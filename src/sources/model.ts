@@ -26,17 +26,31 @@ export interface SourceContext {
 export interface SourceProvider {
   readonly id: string;
   validateSettings?(settings: unknown): void;
-  getGroups(context: SourceContext, settings: unknown, signal: AbortSignal): Promise<readonly SourceGroup[]>;
+  getGroups(
+    context: SourceContext,
+    settings: unknown,
+    signal: AbortSignal,
+  ): Promise<readonly SourceGroup[]>;
 }
 export interface SourceSelection {
   readonly id: string;
   readonly settings?: unknown;
 }
 export type ProviderResult =
-  | { readonly providerId: string; readonly status: "success"; readonly groups: readonly SourceGroup[] }
+  | {
+      readonly providerId: string;
+      readonly status: "success";
+      readonly groups: readonly SourceGroup[];
+    }
   | { readonly providerId: string; readonly status: "error"; readonly message: string };
 
 // Segment arrays distinguish a literal "contact.email" key from a nested path.
 export function sourceReferenceKey(reference: SourceReference): string {
   return JSON.stringify([reference.providerId, reference.resourceId, reference.fieldPath]);
 }
+
+export type CatalogState =
+  | { status: "idle" }
+  | { status: "loading" }
+  | { status: "error"; message: string }
+  | { status: "success"; results: readonly ProviderResult[] };

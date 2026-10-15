@@ -1,18 +1,45 @@
-import type { ReactNode } from "react";
+import type { ReactNode, Ref } from "react";
 import type { FormField, FormInstance } from "../blueprint/model";
 import { isPrefillField } from "../blueprint/fieldPolicy";
 
-export function FormFields({ form, renderControls, header }: { form: FormInstance; header?: ReactNode; renderControls?: (field: FormField) => ReactNode }) {
+export function FormFields({
+  form,
+  renderControls,
+  header,
+  regionRef,
+}: {
+  form: FormInstance;
+  header?: ReactNode;
+  regionRef?: Ref<HTMLElement>;
+  renderControls?: (field: FormField) => ReactNode;
+}) {
   const fields = form.fields.filter(isPrefillField);
   return (
-    <section tabIndex={-1} className="form-detail" aria-label={`${form.name} fields`}>
-      <div className="form-detail-heading"><h3>{form.name}</h3>{header}</div>
-      <p>{renderControls ? "Edits are kept in this session only. Reloading resets mappings." : "Fields available for prefill. Mapping controls will be added later."}</p>
-      {fields.length === 0 ? <p role="status">This form has no prefillable fields.</p> : (
+    <section
+      ref={regionRef}
+      tabIndex={-1}
+      className="form-detail"
+      aria-label={`${form.name} fields`}
+    >
+      <div className="form-detail-heading">
+        <h3>{form.name}</h3>
+        {header}
+      </div>
+      <p>
+        {renderControls
+          ? "Edits are kept in this session only. Reloading resets mappings."
+          : "Fields available for prefill. Mapping controls will be added later."}
+      </p>
+      {fields.length === 0 ? (
+        <p role="status">This form has no prefillable fields.</p>
+      ) : (
         <ul className="field-list" aria-label="Fields">
           {fields.map((field) => (
             <li key={field.key}>
-              <div className="field-name"><strong>{field.label}</strong><code>{field.key}</code></div>
+              <div className="field-name">
+                <strong>{field.label}</strong>
+                <code>{field.key}</code>
+              </div>
               <div className="field-metadata">
                 <span>{field.types.length ? field.types.join(" or ") : "Unspecified type"}</span>
                 {field.required && <span className="required">Required</span>}

@@ -2,11 +2,19 @@ import { describe, expect, it } from "vitest";
 import type { SourceReference } from "../sources/model";
 import type { MappingState, MappingTarget } from "./model";
 import { mappingTargetKey } from "./model";
-import { createMappingState, getMapping, mappingReducer } from "./reducer";
+import { createMappingState, getMapping, getSavedMapping, mappingReducer } from "./reducer";
 
 const target: MappingTarget = { blueprintId: "blueprint", nodeId: "D", fieldKey: "email" };
-const source: SourceReference = { providerId: "indirect-forms", resourceId: "A", fieldPath: ["email"] };
-const replacement: SourceReference = { providerId: "global-properties", resourceId: "organization", fieldPath: ["support_email"] };
+const source: SourceReference = {
+  providerId: "indirect-forms",
+  resourceId: "A",
+  fieldPath: ["email"],
+};
+const replacement: SourceReference = {
+  providerId: "global-properties",
+  resourceId: "organization",
+  fieldPath: ["support_email"],
+};
 function set(state: MappingState, destination = target, reference = source) {
   return mappingReducer(state, { type: "set", target: destination, source: reference });
 }
@@ -50,7 +58,9 @@ describe("mapping state", () => {
   });
   it("clearing an unmapped target is safe and leaves existing entries alone", () => {
     const state = set(createMappingState());
-    expect(mappingReducer(state, { type: "clear", target: { ...target, nodeId: "missing" } })).toBe(state);
+    expect(mappingReducer(state, { type: "clear", target: { ...target, nodeId: "missing" } })).toBe(
+      state,
+    );
   });
   it("reselecting the same reference is a no-op, regardless of object identity", () => {
     const state = set(createMappingState());
@@ -65,13 +75,18 @@ describe("mapping state", () => {
     expect(getMapping(set(state, target, next), target)).toEqual(next);
     expect(getMapping(state, target)).toEqual(source);
   });
-  it.each(["__proto__", "constructor", "toString", "a.b", "a:b", 'a"b', "a/b", "", "顧客"])("supports literal target keys %j", (fieldKey) => {
-    const special = { blueprintId: fieldKey, nodeId: fieldKey, fieldKey };
-    const state = set(set(createMappingState()), special, replacement);
-    expect(getMapping(state, special)).toEqual(replacement);
-    expect(getMapping(state, target)).toEqual(source);
-    expect(getMapping(mappingReducer(state, { type: "clear", target: special }), target)).toEqual(source);
-  });
+  it.each(["__proto__", "constructor", "toString", "a.b", "a:b", 'a"b', "a/b", "", "顧客"])(
+    "supports literal target keys %j",
+    (fieldKey) => {
+      const special = { blueprintId: fieldKey, nodeId: fieldKey, fieldKey };
+      const state = set(set(createMappingState()), special, replacement);
+      expect(getMapping(state, special)).toEqual(replacement);
+      expect(getMapping(state, target)).toEqual(source);
+      expect(getMapping(mappingReducer(state, { type: "clear", target: special }), target)).toEqual(
+        source,
+      );
+    },
+  );
   it("does not collide when delimiters move between target identity parts", () => {
     const left = { blueprintId: "a:b", nodeId: "c", fieldKey: "d" };
     const right = { blueprintId: "a", nodeId: "b:c", fieldKey: "d" };
@@ -106,8 +121,11 @@ describe("mapping state", () => {
     expect(getMapping(state, target)).toEqual(source);
   });
   it("does not mutate frozen actions, sources or targets", () => {
-    const action = Object.freeze({ type: "set" as const, target: Object.freeze({ ...target }),
-      source: Object.freeze({ ...source, fieldPath: Object.freeze(["email"]) }) });
+    const action = Object.freeze({
+      type: "set" as const,
+      target: Object.freeze({ ...target }),
+      source: Object.freeze({ ...source, fieldPath: Object.freeze(["email"]) }),
+    });
     expect(getMapping(mappingReducer(createMappingState(), action), target)).toEqual(source);
   });
   it("retains references when a provider is later unavailable", () => {
@@ -118,12 +136,18 @@ describe("mapping state", () => {
     expect(getMapping(mappingReducer(state, { type: "clear", target }), target)).toBeUndefined();
   });
   it("supports repeated independent edits against a simple reference model", () => {
-    const targets = ["bp-1", "bp-2", "bp-3"].flatMap((blueprintId) => ["A", "B", "C"].flatMap((nodeId) =>
-      ["email", "object", "array"].map((fieldKey) => ({ blueprintId, nodeId, fieldKey }))));
+    const targets = ["bp-1", "bp-2", "bp-3"].flatMap((blueprintId) =>
+      ["A", "B", "C"].flatMap((nodeId) =>
+        ["email", "object", "array"].map((fieldKey) => ({ blueprintId, nodeId, fieldKey })),
+      ),
+    );
     const expected: (SourceReference | undefined)[] = Array.from({ length: targets.length });
     let state = createMappingState();
     let seed = 12345;
-    const random = () => { seed = (Math.imul(seed, 1664525) + 1013904223) >>> 0; return seed; };
+    const random = () => {
+      seed = (Math.imul(seed, 1664525) + 1013904223) >>> 0;
+      return seed;
+    };
     for (let step = 0; step < 500; step += 1) {
       const index = random() % targets.length;
       const destination = targets[index]!;
@@ -140,5 +164,62 @@ describe("mapping state", () => {
       targets.forEach((entry, i) => expect(getMapping(state, entry)).toEqual(expected[i]));
       expect(JSON.stringify(previous)).toBe(snapshot);
     }
+  });
+});
+
+describe("mapping label snapshots", () => {
+  it("saves source and label atomically and clears both", () => {
+    const state = mappingReducer(createMappingState(), {
+      type: "set",
+      target,
+      source,
+      fallbackLabel: "Form A · Email",
+    });
+    expect(getSavedMapping(state, target)).toEqual({ source, fallbackLabel: "Form A · Email" });
+    expect(Object.isFrozen(getSavedMapping(state, target))).toBe(true);
+    expect(
+      getSavedMapping(mappingReducer(state, { type: "clear", target }), target),
+    ).toBeUndefined();
+  });
+  it("updates a label without changing source identity and skips identical confirmations", () => {
+    const action = { type: "set" as const, target, source, fallbackLabel: "Old label" };
+    const state = mappingReducer(createMappingState(), action);
+    expect(mappingReducer(state, { ...action, source: { ...source } })).toBe(state);
+    const updated = mappingReducer(state, { ...action, fallbackLabel: "New label" });
+    expect(getSavedMapping(updated, target)?.fallbackLabel).toBe("New label");
+    expect(getMapping(updated, target)).toBe(getMapping(state, target));
+    expect(getSavedMapping(state, target)?.fallbackLabel).toBe("Old label");
+  });
+  it("keeps labels isolated for targets sharing one source", () => {
+    const other = { ...target, fieldKey: "name" };
+    const first = mappingReducer(createMappingState(), {
+      type: "set",
+      target,
+      source,
+      fallbackLabel: "Email label",
+    });
+    const both = mappingReducer(first, {
+      type: "set",
+      target: other,
+      source,
+      fallbackLabel: "Name label",
+    });
+    expect(getSavedMapping(both, target)?.fallbackLabel).toBe("Email label");
+    expect(getSavedMapping(both, other)?.fallbackLabel).toBe("Name label");
+    const cleared = mappingReducer(both, { type: "clear", target: other });
+    expect(getSavedMapping(cleared, target)).toBe(getSavedMapping(both, target));
+  });
+  it("does not retain a previous label when replacing with an unlabeled source", () => {
+    const state = mappingReducer(createMappingState(), {
+      type: "set",
+      target,
+      source,
+      fallbackLabel: "Old label",
+    });
+    const replaced = mappingReducer(state, { type: "set", target, source: replacement });
+    expect(getSavedMapping(replaced, target)).toEqual({
+      source: replacement,
+      fallbackLabel: undefined,
+    });
   });
 });

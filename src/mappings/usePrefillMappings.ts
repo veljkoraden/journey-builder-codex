@@ -6,9 +6,12 @@ import { createMappingState, mappingReducer } from "./reducer";
 // Mount once at the editor owner, above form/field selection, to retain edits.
 export function usePrefillMappings() {
   const [state, dispatch] = useReducer(mappingReducer, undefined, createMappingState);
-  const setMapping = useCallback((target: MappingTarget, source: SourceReference) => {
-    dispatch({ type: "set", target, source });
-  }, []);
+  const setMapping = useCallback(
+    (target: MappingTarget, source: SourceReference, fallbackLabel?: string) => {
+      dispatch({ type: "set", target, source, fallbackLabel });
+    },
+    [],
+  );
   const clearMapping = useCallback((target: MappingTarget) => {
     dispatch({ type: "clear", target });
   }, []);

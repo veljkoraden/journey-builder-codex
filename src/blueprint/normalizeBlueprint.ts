@@ -40,23 +40,40 @@ function unique(id: string, seen: Set<string>, path: string) {
 function fields(value: unknown, path: string): FormField[] {
   const schema = record(value, path);
   const properties = record(schema.properties, `${path}.properties`);
-  const required = new Set(schema.required === undefined ? [] :
-    list(schema.required, `${path}.required`).map((key) => text(key, `${path}.required entry`)));
+  const required = new Set(
+    schema.required === undefined
+      ? []
+      : list(schema.required, `${path}.required`).map((key) => text(key, `${path}.required entry`)),
+  );
   return Object.entries(properties).map(([key, value]) => {
     const propertyPath = `${path}.properties[${JSON.stringify(key)}]`;
     const property = record(value, propertyPath);
-    const types = property.type === undefined ? [] :
-      typeof property.type === "string" ? [property.type] :
-        list(property.type, `${propertyPath}.type`).map((type) => text(type, `${propertyPath}.type entry`));
-    if (property.type !== undefined && (!types.length || types.some((type) =>
-      !["string", "number", "integer", "boolean", "object", "array", "null"].includes(type)))) {
+    const types =
+      property.type === undefined
+        ? []
+        : typeof property.type === "string"
+          ? [property.type]
+          : list(property.type, `${propertyPath}.type`).map((type) =>
+              text(type, `${propertyPath}.type entry`),
+            );
+    if (
+      property.type !== undefined &&
+      (!types.length ||
+        types.some(
+          (type) =>
+            !["string", "number", "integer", "boolean", "object", "array", "null"].includes(type),
+        ))
+    ) {
       throw new BlueprintValidationError(`${propertyPath}.type is unsupported`);
     }
     return {
       key,
       label: label(property.title, key, `${propertyPath}.title`),
       types,
-      controlType: property.avantos_type === undefined ? null : text(property.avantos_type, `${propertyPath}.avantos_type`),
+      controlType:
+        property.avantos_type === undefined
+          ? null
+          : text(property.avantos_type, `${propertyPath}.avantos_type`),
       required: required.has(key),
     };
   });
@@ -84,13 +101,19 @@ export function normalizeBlueprint(value: unknown): Blueprint {
     const nodeId = text(node.id, `${path}.id`);
     unique(nodeId, nodeIds, "nodes");
     const type = text(node.type, `${path}.type`);
-    const data = node.data === undefined && type !== "form" ? {} : record(node.data, `${path}.data`);
-    const prerequisites = data.prerequisites === undefined ? null :
-      list(data.prerequisites, `${path}.data.prerequisites`).map((entry) => text(entry, `${path}.data.prerequisites entry`));
+    const data =
+      node.data === undefined && type !== "form" ? {} : record(node.data, `${path}.data`);
+    const prerequisites =
+      data.prerequisites === undefined
+        ? null
+        : list(data.prerequisites, `${path}.data.prerequisites`).map((entry) =>
+            text(entry, `${path}.data.prerequisites entry`),
+          );
     if (type === "form") {
       const definitionId = text(data.component_id, `${path}.data.component_id`);
       const definitionFields = definitions.get(definitionId);
-      if (!definitionFields) throw new BlueprintValidationError(`${path} references a missing form definition`);
+      if (!definitionFields)
+        throw new BlueprintValidationError(`${path} references a missing form definition`);
       forms.push({
         nodeId,
         definitionId,
@@ -103,7 +126,10 @@ export function normalizeBlueprint(value: unknown): Blueprint {
 
   const edges = list(root.edges, "edges").map((value, index) => {
     const edge = record(value, `edges[${index}]`);
-    return { source: text(edge.source, `edges[${index}].source`), target: text(edge.target, `edges[${index}].target`) };
+    return {
+      source: text(edge.source, `edges[${index}].source`),
+      target: text(edge.target, `edges[${index}].target`),
+    };
   });
   return { id, name: label(root.name, id, "name"), forms, nodes, edges };
 }

@@ -10,7 +10,10 @@ export interface LoadedBlueprint {
 }
 
 // Construct the index once per response, before the hook can publish success.
-export async function loadBlueprint(endpoint: string, signal: AbortSignal): Promise<LoadedBlueprint> {
+export async function loadBlueprint(
+  endpoint: string,
+  signal: AbortSignal,
+): Promise<LoadedBlueprint> {
   const response = await fetchBlueprint(endpoint, signal);
   signal.throwIfAborted();
   const data = normalizeBlueprint(response);

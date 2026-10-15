@@ -6,12 +6,17 @@ function validateGroups(providerId: string, groups: readonly SourceGroup[]): voi
   const groupIds = new Set<string>();
   const references = new Set<string>();
   for (const group of groups) {
-    if (!group.id.trim() || groupIds.has(group.id)) throw new Error("Duplicate or empty source group ID.");
+    if (!group.id.trim() || groupIds.has(group.id))
+      throw new Error("Duplicate or empty source group ID.");
     groupIds.add(group.id);
     for (const option of group.options) {
       const reference = option.reference;
-      if (reference.providerId !== providerId || !reference.resourceId.trim()
-        || reference.fieldPath.length === 0 || reference.fieldPath.some((part) => typeof part !== "string")) {
+      if (
+        reference.providerId !== providerId ||
+        !reference.resourceId.trim() ||
+        reference.fieldPath.length === 0 ||
+        reference.fieldPath.some((part) => typeof part !== "string")
+      ) {
         throw new Error("Invalid source reference.");
       }
       const key = sourceReferenceKey(reference);
@@ -46,22 +51,33 @@ export async function loadSourceCatalog(
   signal.throwIfAborted();
   // Resolve everything before starting any provider: invalid selection never partially runs.
   const resolved = registry.resolve(selections);
-  const form = context.blueprint.forms.find((candidate) => candidate.nodeId === context.targetForm.nodeId);
+  const form = context.blueprint.forms.find(
+    (candidate) => candidate.nodeId === context.targetForm.nodeId,
+  );
   if (form !== context.targetForm || !form.fields.includes(context.targetField)) {
     throw new Error("Source target must belong to the loaded blueprint.");
   }
-  return Promise.all(resolved.map(async ({ provider, settings }): Promise<ProviderResult> => {
-    try {
-      const groups = await abortable(Promise.resolve().then(() => {
+  return Promise.all(
+    resolved.map(async ({ provider, settings }): Promise<ProviderResult> => {
+      try {
+        const groups = await abortable(
+          Promise.resolve().then(() => {
+            signal.throwIfAborted();
+            return provider.getGroups(context, settings, signal);
+          }),
+          signal,
+        );
         signal.throwIfAborted();
-        return provider.getGroups(context, settings, signal);
-      }), signal);
-      signal.throwIfAborted();
-      validateGroups(provider.id, groups);
-      return { providerId: provider.id, status: "success", groups };
-    } catch (error) {
-      signal.throwIfAborted();
-      return { providerId: provider.id, status: "error", message: error instanceof Error ? error.message : "Source provider failed." };
-    }
-  }));
+        validateGroups(provider.id, groups);
+        return { providerId: provider.id, status: "success", groups };
+      } catch (error) {
+        signal.throwIfAborted();
+        return {
+          providerId: provider.id,
+          status: "error",
+          message: error instanceof Error ? error.message : "Source provider failed.",
+        };
+      }
+    }),
+  );
 }

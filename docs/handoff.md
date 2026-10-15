@@ -58,7 +58,8 @@ traversal, stable reference identity, effect cleanup, and draft versus committed
 React state. Practice these with the walkthrough and extension example before the
 live session.
 
-The original delivery phases are complete. The next development work is the
-[planned optimization](optimization-plan.md) tracked in issue #16. Its five phases
-preserve source extensibility and existing behavior; none is implemented yet.
+The original delivery phases are complete. All five phases of the
+[optimization plan](optimization-plan.md) tracked in issue #16 are implemented on
+PR #18 and awaiting review and merge. Their phase records document validation
+and preserved source extensibility.
 Challenge submission remains a separate action by the submitter.

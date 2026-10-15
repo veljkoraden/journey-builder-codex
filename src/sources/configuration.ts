@@ -9,15 +9,27 @@ function object(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
 }
 
-export function parseSourceConfiguration(value: unknown, registry: SourceRegistry = sourceRegistry): readonly SourceSelection[] {
-  if (!object(value) || Object.keys(value).some((key) => key !== "providers") || !Array.isArray(value.providers)) {
+export function parseSourceConfiguration(
+  value: unknown,
+  registry: SourceRegistry = sourceRegistry,
+): readonly SourceSelection[] {
+  if (
+    !object(value) ||
+    Object.keys(value).some((key) => key !== "providers") ||
+    !Array.isArray(value.providers)
+  ) {
     return fail("expected an object containing a providers array");
   }
   const enabled: SourceSelection[] = [];
   const all: SourceSelection[] = [];
   for (const entry of value.providers) {
-    if (!object(entry) || Object.keys(entry).some((key) => !["id", "enabled", "settings"].includes(key))
-      || typeof entry.id !== "string" || !entry.id.trim() || typeof entry.enabled !== "boolean") {
+    if (
+      !object(entry) ||
+      Object.keys(entry).some((key) => !["id", "enabled", "settings"].includes(key)) ||
+      typeof entry.id !== "string" ||
+      !entry.id.trim() ||
+      typeof entry.enabled !== "boolean"
+    ) {
       return fail("each provider needs a nonempty id and a boolean enabled flag");
     }
     const selection = { id: entry.id, settings: entry.settings };
@@ -28,7 +40,8 @@ export function parseSourceConfiguration(value: unknown, registry: SourceRegistr
     // Check disabled entries too, so a typo cannot remain hidden until activation.
     for (const { provider, settings } of registry.resolve(all)) {
       if (provider.validateSettings) provider.validateSettings(settings);
-      else if (settings !== undefined) throw new Error(`Provider ${provider.id} does not declare settings support`);
+      else if (settings !== undefined)
+        throw new Error(`Provider ${provider.id} does not declare settings support`);
     }
   } catch (error) {
     return fail(error instanceof Error ? error.message : "provider validation failed");
@@ -54,10 +67,14 @@ export async function loadSourceConfiguration(
     throw new Error("Unable to load source-config.json. Check the connection and retry.");
   }
   signal.throwIfAborted();
-  if (!response.ok) throw new Error(`Unable to load source-config.json (HTTP ${response.status}). Check the deployed file and retry.`);
+  if (!response.ok)
+    throw new Error(
+      `Unable to load source-config.json (HTTP ${response.status}). Check the deployed file and retry.`,
+    );
   let value: unknown;
-  try { value = await response.json(); }
-  catch {
+  try {
+    value = await response.json();
+  } catch {
     signal.throwIfAborted();
     throw new Error("source-config.json is not valid JSON. Update the file and retry.");
   }

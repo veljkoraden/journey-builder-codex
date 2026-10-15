@@ -1,7 +1,7 @@
 # Optimization plan
 
 Tracking: [issue #16](https://github.com/veljkoraden/journey-builder-codex/issues/16).
-Status: **Planned — no optimization phases implemented yet.**
+Status: **O1–O5 implemented on PR #18; awaiting review and merge.**
 Baseline: main `8ba5b7d`, following the original twelve delivery phases and the
 merged handoff correction in PR #15. These five optimization phases are numbered
 separately from the original implementation plan.
@@ -36,11 +36,25 @@ files are not success criteria; clearer ownership and fewer repeated decisions a
 
 | Phase | Status | Work and explanation | Completion evidence |
 | --- | --- | --- | --- |
-| O1 — Readability | Planned | Named props interfaces and handlers, descriptive variables, expanded JSX/branches, formatting and React Hooks lint checks. Separate mechanical formatting from behavior changes. | Existing behavior preserved; tests/build and introduced checks pass. |
-| O2 — Shared decisions | Planned | Small pure helpers for catalog groups, reference lookup, labels, availability, and search. Make no-match feedback use the same matching rules as displayed results. | Focused decision tests; existing search, draft, failure, and availability behavior passes. |
-| O3 — Editor composition | Planned | Extract meaningful selected-form/settings components. Keep durable mapping state above form switching. Replace eager contexts for every form/field with stable contexts near their consumers. | Navigation, mapping isolation, toggles, cancellation, focus, and graph/config replacement remain correct; no request loops. |
-| O4 — Evaluate simplification | Planned | Evaluate storing label snapshots with mappings; measure repeated provider requests; standardize asynchronous hook layout. Introduce caching or shared hooks only with demonstrated benefit. | Evidence for each adopted change and regression coverage; explicitly document deferrals. |
-| O5 — Extension and learning | Planned | Update the executable provider walkthrough and add a concise file-reading sequence. Keep current instructions separate from historical phase records. | Execute setup and provider-extension instructions in a disposable checkout without consumer or test-expectation edits. |
+| O1 — Readability | Implemented in PR #18 | Named props interfaces and handlers, descriptive variables, expanded JSX/branches, formatting and React Hooks lint checks. Separate mechanical formatting from behavior changes. | Existing behavior preserved; tests/build and introduced checks pass. |
+| O2 — Shared decisions | Implemented in PR #18 | Small pure helpers for catalog groups, reference lookup, labels, availability, and search. Make no-match feedback use the same matching rules as displayed results. | Focused decision tests; existing search, draft, failure, and availability behavior passes. |
+| O3 — Editor composition | Implemented in PR #18 | Extract meaningful selected-form/settings components. Keep durable mapping state above form switching. Replace eager contexts for every form/field with stable contexts near their consumers. | Navigation, mapping isolation, toggles, cancellation, focus, and graph/config replacement remain correct; no request loops. |
+| O4 — Evaluate simplification | Implemented in PR #18 | Evaluate storing label snapshots with mappings; measure repeated provider requests; standardize asynchronous hook layout. Introduce caching or shared hooks only with demonstrated benefit. | Evidence for each adopted change and regression coverage; explicitly document deferrals. |
+| O5 — Extension and learning | Implemented in PR #18 | Update the executable provider walkthrough and add a concise file-reading sequence. Keep current instructions separate from historical phase records. | Execute setup and provider-extension instructions in a disposable checkout without consumer or test-expectation edits. |
+
+## Phase evidence
+
+- [O1: readability and tooling](optimization-o1-readability.md)
+- [O2: shared catalog decisions](optimization-o2-catalog-decisions.md)
+- [O3: editor composition](optimization-o3-editor-composition.md)
+- [O4: mapping state and request evaluation](optimization-o4-state-and-requests.md)
+- [O5: extension and learning handoff](optimization-o5-extension-handoff.md)
+
+The completed branch has 353 unit/component tests and 16 Chromium scenarios.
+O4 retained explicit async hooks and individual requests after evaluation; caching
+and a generic hook were deferred. O5 verified empty and extended configurations
+in a disposable checkout without test-expectation edits. See each phase for evidence
+and limitations. Implementation on this branch is separate from delivery on main.
 
 ## Main files involved
 

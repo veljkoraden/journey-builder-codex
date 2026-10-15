@@ -307,5 +307,5 @@ If time is tight, reduce decoration and optional toggle polish before reducing i
 The original twelve phases and the handoff correction are delivered on main.
 Further work is tracked in [issue #16](https://github.com/veljkoraden/journey-builder-codex/issues/16)
 and the separately numbered [optimization plan](optimization-plan.md). All five
-optimization phases are planned; begin with O1 readability and consistency.
+optimization phases are implemented on PR #18 and awaiting review and merge.
 See [handoff](handoff.md) for current limitations.

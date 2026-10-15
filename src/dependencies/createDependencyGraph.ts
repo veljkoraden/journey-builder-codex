@@ -33,7 +33,8 @@ export function createDependencyGraph(blueprint: Blueprint): DependencyGraph {
   for (const edge of blueprint.edges) {
     const incoming = predecessors.get(edge.target);
     const outgoing = successors.get(edge.source);
-    if (!incoming || !outgoing) throw new DependencyValidationError("an edge references a missing node");
+    if (!incoming || !outgoing)
+      throw new DependencyValidationError("an edge references a missing node");
     // Duplicate edges represent the same relationship, not extra dependencies.
     incoming.add(edge.source);
     outgoing.add(edge.target);
@@ -43,7 +44,8 @@ export function createDependencyGraph(blueprint: Blueprint): DependencyGraph {
     if (node.prerequisites === null) continue;
     const declared = new Set(node.prerequisites);
     for (const id of declared) {
-      if (!predecessors.has(id)) throw new DependencyValidationError("a prerequisite references a missing node");
+      if (!predecessors.has(id))
+        throw new DependencyValidationError("a prerequisite references a missing node");
     }
     const actual = predecessors.get(node.id)!;
     if (declared.size !== actual.size || [...declared].some((id) => !actual.has(id))) {
@@ -67,7 +69,8 @@ export function createDependencyGraph(blueprint: Blueprint): DependencyGraph {
 
   const forms = new Map<string, FormInstance>();
   for (const form of blueprint.forms) {
-    if (!predecessors.has(form.nodeId)) throw new DependencyValidationError("a form references a missing node");
+    if (!predecessors.has(form.nodeId))
+      throw new DependencyValidationError("a form references a missing node");
     if (forms.has(form.nodeId)) throw new DependencyValidationError("duplicate form node ID");
     forms.set(form.nodeId, form);
   }
@@ -94,10 +97,22 @@ export function createDependencyGraph(blueprint: Blueprint): DependencyGraph {
 
   function getUpstreamForms(nodeId: string): DependencyGroups<FormInstance> {
     const ancestors = getAncestors(nodeId);
-    const selectForms = (ids: readonly string[]) => Object.freeze(ids
-      .flatMap((id) => { const form = forms.get(id); return form ? [form] : []; })
-      .sort((left, right) => compareText(left.name, right.name) || compareText(left.nodeId, right.nodeId)));
-    return Object.freeze({ direct: selectForms(ancestors.direct), indirect: selectForms(ancestors.indirect) });
+    const selectForms = (ids: readonly string[]) =>
+      Object.freeze(
+        ids
+          .flatMap((id) => {
+            const form = forms.get(id);
+            return form ? [form] : [];
+          })
+          .sort(
+            (left, right) =>
+              compareText(left.name, right.name) || compareText(left.nodeId, right.nodeId),
+          ),
+      );
+    return Object.freeze({
+      direct: selectForms(ancestors.direct),
+      indirect: selectForms(ancestors.indirect),
+    });
   }
 
   return Object.freeze({ getAncestors, getUpstreamForms });

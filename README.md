@@ -12,8 +12,9 @@ mock has no save endpoint; this app configures references, not submitted values.
 
 ## Run locally
 
-Use Node **22.12+ within the Node 22 release line** and npm 10. `.nvmrc` pins the
-project's development version; use `nvm use` if you use nvm.
+Use Node **22.18+ within the Node 22 release line** and npm 10. `.nvmrc` pins the
+project's development version; use `nvm use` if you use nvm. Node 22.18 is
+the minimum required by the lint parser; `.nvmrc` remains at 22.22.2.
 
 ```sh
 npm ci
@@ -92,6 +93,8 @@ of installed providers does not. Follow the [tested extension guide](docs/provid
 ## Validate
 
 ```sh
+npm run format:check
+npm run lint
 npm run test:run
 npm run build
 npx playwright install chromium
@@ -109,6 +112,8 @@ On Linux missing browser libraries, use
 | Command | Purpose |
 | --- | --- |
 | `npm run dev` | Start Vite development server |
+| `npm run format` / `npm run format:check` | Format / check owned TypeScript and CSS |
+| `npm run lint` | Check Rules of Hooks and effect dependencies |
 | `npm run typecheck` | Check application and unit/component tests |
 | `npm test` / `npm run test:run` | Watch / run Vitest once |
 | `npm run build` / `npm run preview` | Build / serve `dist` |
@@ -120,13 +125,28 @@ CI runs these checks and uploads browser artifacts. Local results, PR checks,
 merge, deployment, and submission are separate milestones. See the
 [handoff and evidence](docs/handoff.md) for current coverage and limitations.
 
-## Planned optimization
+## Optimization progress
+
+The [optimization plan](docs/optimization-plan.md) links the completed O1–O5 work
+and its evidence. These changes are under review in PR #18, not yet merged.
 
 [Issue #16](https://github.com/veljkoraden/journey-builder-codex/issues/16) tracks
-readability, shared catalog decisions, editor composition, and extension usability.
-The [optimization plan](docs/optimization-plan.md) defines five small phases and
-test gates. This work is planned, not implemented. Configuration-only source
-combinations and easy provider registration must remain supported throughout.
+readability and extensibility improvements. [O1: readability and tooling](docs/optimization-o1-readability.md)
+documents the first increment and its React walkthrough.
+[O2: shared catalog decisions](docs/optimization-o2-catalog-decisions.md) centralizes
+lookup, labels, search, and mapping availability.
+[O3: editor composition](docs/optimization-o3-editor-composition.md) separates selected-form
+presentation and creates stable contexts near their consumers. Runtime provider
+configuration remains unchanged. [O4: mapping state and request evaluation](docs/optimization-o4-state-and-requests.md)
+stores fallback labels with mappings and documents why caching and a generic async
+hook are deferred. [O5: extension and learning handoff](docs/optimization-o5-extension-handoff.md)
+verifies the extension walkthrough and adds a guided architecture reading path.
+
+Formatting applies to owned source/tests, CSS, browser harness TypeScript, and
+root TypeScript/JavaScript configuration. It excludes Markdown, JSON, generated
+reports, and the checksummed upstream mock. ESLint uses Babel for syntax parsing;
+`tsc` still owns type checking. The lint rules follow the
+[React Hooks guidance](https://react.dev/reference/eslint-plugin-react-hooks).
 
 ## Understand and extend the code
 

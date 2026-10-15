@@ -1,5 +1,28 @@
 # Architecture and React walkthrough
 
+## Read these files first
+
+Follow one user action before reading every helper:
+
+1. [main.tsx](../src/main.tsx) and [App.tsx](../src/app/App.tsx): where React mounts
+   and how graph loading and source configuration are composed.
+2. [PrefillEditor.tsx](../src/ui/PrefillEditor.tsx): state that survives navigation,
+   opening a field, confirming a source, and clearing a mapping.
+3. [PrefillForm.tsx](../src/ui/PrefillForm.tsx) and
+   [FormFields.tsx](../src/ui/FormFields.tsx): props, header/control slots, and field contexts.
+4. [SourceDialog.tsx](../src/ui/SourceDialog.tsx): temporary search/selection state;
+   follow its catalog hook into [loadSourceCatalog.ts](../src/sources/loadSourceCatalog.ts).
+5. [sources/model.ts](../src/sources/model.ts), [registry.ts](../src/sources/registry.ts),
+   and [teamDirectory.ts](../src/sources/examples/teamDirectory.ts): the extension contract,
+   installation point, and small working provider.
+6. [mappings/reducer.ts](../src/mappings/reducer.ts): how confirmation saves a
+   reference and fallback label together without mutating earlier state.
+
+Then use [the extension walkthrough](provider-extension.md) to add a provider.
+For API/graph details, follow `BlueprintConnection` into `loadBlueprint` and
+`createDependencyGraph`. Colocated tests demonstrate edge cases; historical phase
+records explain decisions, while this guide and the README describe current usage.
+
 ## Files by responsibility
 
 ```text
@@ -33,7 +56,9 @@ index.html → main.tsx → App
       → PrefillEditor
           ├── usePrefillMappings → mappingReducer
           ├── summarizeMappings → per-form counts
-          ├── FormBrowser → FormList + FormFields → MappingControls
+          ├── FormBrowser → FormList + PrefillForm → FormFields
+          │       ├── PrefillSettings
+          │       └── MappingControls
           └── SourceDialog → useSourceCatalog → loadSourceCatalog → providers
                   └── SourceGroupChoices
 ```
@@ -130,9 +155,39 @@ them. The mock exposes no save route; incoming nonempty server mapping contracts
 are unverified. Future tenant/version switching needs explicit scope or owner
 reset. See [handoff](handoff.md) for the complete limitations.
 
-## Planned optimization
+## Shared catalog decisions (O2)
 
-The [optimization plan](optimization-plan.md) tracks proposed readability and
-composition changes. This guide describes the current implementation. Existing
-source combinations must remain configuration-only, and new providers must remain
-registerable without changes to the dialog, mapping reducer, or graph traversal.
+`src/sources/catalog.ts` provides pure group selection, reference lookup, label
+formatting, and search. `src/mappings/availability.ts` turns catalog state into an
+explicit unmapped/checking/available/unavailable result. The dialog and mapping
+controls consume these helpers; group components render filtered options while
+retaining expansion state. See the [O2 walkthrough](optimization-o2-catalog-decisions.md).
+
+## Selected-form composition (O3)
+
+`PrefillEditor` keeps mappings and editing settings above form navigation, and owns
+the active dialog target. `FormBrowser` supplies the selected form to `PrefillForm`,
+which composes `FormFields`, `PrefillSettings`, and private field controls. Each
+mounted field owns a stable source context using canonical graph objects; the
+open dialog has its own memoized context. No all-form context map is allocated.
+Explicit button and form-region refs restore focus after clearing a mapping.
+See [O3's React walkthrough](optimization-o3-editor-composition.md) for render flow
+and the distinction between durable state, props, memoized inputs, and refs.
+
+## Saved mapping state and request decisions (O4)
+
+The mapping reducer stores a `SavedMapping` per target: a source reference and an
+optional fallback label captured on confirmation. Clearing removes both. Labels
+are scoped to targets, so two fields sharing a source cannot overwrite each other's
+snapshots. `getSavedMapping` supplies the UI; `getMapping` supplies reference-only
+consumers. Live catalog labels take precedence, and label-only edits retain the
+source object's identity. There is no separate editor label dictionary.
+
+[O4's measurement and React walkthrough](optimization-o4-state-and-requests.md)
+records six provider calls across two field assignments and a navigation round
+trip, with none from an unchanged parent render. Target-specific catalogs prevent
+safe sharing by form alone. Individual requests and explicit domain loading hooks
+remain; no cache or generic async hook is introduced.
+
+The [optimization plan](optimization-plan.md) links all five completed phases and
+their validation records. PR #18 remains open for review.

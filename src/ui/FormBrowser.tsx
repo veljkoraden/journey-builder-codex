@@ -6,7 +6,12 @@ import { FormFields } from "./FormFields";
 
 const formNameOrder = new Intl.Collator("en", { sensitivity: "base" });
 
-export function FormBrowser({ blueprint, renderFields, onSelect, counts }: {
+export function FormBrowser({
+  blueprint,
+  renderFields,
+  onSelect,
+  counts,
+}: {
   blueprint: Blueprint;
   counts?: ReadonlyMap<string, MappingCount>;
   renderFields?: (form: Blueprint["forms"][number]) => ReactNode;
@@ -23,7 +28,15 @@ export function FormBrowser({ blueprint, renderFields, onSelect, counts }: {
     <>
       <p className="blueprint-name">{blueprint.name}</p>
       <div className="form-browser">
-        <FormList counts={counts} forms={forms} selectedId={selected.nodeId} onSelect={(id) => { onSelect?.(); setSelectedId(id); }} />
+        <FormList
+          counts={counts}
+          forms={forms}
+          selectedId={selected.nodeId}
+          onSelect={(id) => {
+            onSelect?.();
+            setSelectedId(id);
+          }}
+        />
         {renderFields ? renderFields(selected) : <FormFields form={selected} />}
       </div>
     </>
